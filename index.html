@@ -143,24 +143,41 @@
 
   <script>
     const questions = [
-      "What is the square root of 4",
-      "17+17",
-      "What do supplemental angles add up to in degress",
-      "100.00-43.03=_ _. _ _",
-      "Enter the final 5-digit code"
-    ];
+      "Sum of current years digits !", 
 
-    const correctAnswers = [
-      [2],
-      [3, 4],
-      [1, 8, 0],
-      [5, 6, 9, 7],
-      [1, 8, 9, 5, 7]
-    ];
+      "LCM of 15 and 6 ", 
 
-    const hintText = "Try 18957.";
-    const pyramid = [1, 2, 3, 4, 5];
-    let code = [1, 8, 9, 5, 7];
+      "2^9", 
+
+      "10,000-1353", 
+
+      "Enter the final 5-digit code" 
+
+    ]; 
+
+ 
+
+    const correctAnswers = [ 
+
+      [9], 
+
+      [3, 0], 
+
+      [5, 1, 2], 
+
+      [8, 6, 4, 7], 
+
+      [9, 6, 2, 0, 7] 
+
+    ]; 
+
+ 
+
+    const hintText = "Try 96207."; 
+
+    const pyramid = [1, 2, 3, 4, 5]; 
+
+    let code = [9, 6, 2, 0, 7]; 
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
