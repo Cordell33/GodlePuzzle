@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gödle</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #121212;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .game-area {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+    .questions {
+      font-size: 1.2rem;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .question-text {
+      background-color: #333;
+      border-left: 4px solid #00bcd4;
+      padding: 0.5rem;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .hint-text {
+      background-color: #333;
+      border-left: 4px solid #ff9800;
+      padding: 0.5rem;
+      font-style: italic;
+      border-radius: 4px;
+      margin-top: 1rem;
+      display: none;
+    }
+    .guesses {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 17rem;
+    }
+    .row {
+      display: flex;
+      margin: 0.5rem 0;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .cell {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.5rem;
+      margin: 0.2rem;
+      text-align: center;
+      border: 2px solid #444;
+      border-radius: 8px;
+      background: #222;
+      color: white;
+    }
+    .cell.green { background: green; }
+    .cell.yellow { background: goldenrod; }
+    .cell.gray { background: #444; }
+    .row-result {
+      margin-left: 0.5rem;
+      font-size: 1.5rem;
+    }
+    #submit { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; }
+    #hint-button { margin-top: 0.5rem; padding: 0.4rem 1rem; font-size: 0.9rem; }
+    #game-over { margin-top: 1rem; font-size: 1.2rem; }
+    #start-screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #121212;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      z-index: 999;
+    }
+    #start-button {
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    #timer {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+    #stars {
+      margin-top: 0.5rem;
+      font-size: 1.5rem;
+    }
+  </style>
+
+  
+</head>
+<body>
+  <div id="start-screen">
+    <h1>Welcome to Gödle</h1>
+    <p>created by Cordell Booth</p>
+    <p>Crack the 5-digit code using logic and math!</p>
+    <ul style="text-align: left; max-width: 400px;">
+      <li>Row 1: Answer a 1-digit question using any digit 0–9.</li>
+      <li>Row 2: Answer a 2-digit question excluding the digit from Row 1.</li>
+      <li>Row 3: Answer a 3-digit question with digits not in Rows 1 or 2.</li>
+      <li>Row 4: Answer a 4-digit question with the remaining unused digits.</li>
+      <li>Your final guess will be a 5-digit code composed of the digits used above.</li>
+      <li>Green = correct digit & position, Yellow = correct digit, wrong position.</li>
+      <li>You need at least 3 green clues to solve the puzzle.</li>
+    </ul>
+    <button id="start-button">Start Game</button>
+  </div>
+
+  <h1>Gödle</h1>
+  <div id="timer"></div>
+  <div class="game-area">
+    <div class="questions">
+      <div id="questions"></div>
+      <div id="hint" class="hint-text"></div>
+    </div>
+    <div class="guesses" id="guess-container"></div>
+  </div>
+  <button id="submit">Submit Guess</button>
+  <button id="hint-button" style="display: none;">Hint</button>
+  <div id="stars"></div>
+  <div id="game-over"></div>
+
+  <script>
+    const questions = [
+      "What is the square root of 4",
+      "17+17",
+      "What do supplemental angles add up to in degress",
+      "100.00-43.03=_ _. _ _",
+      "Enter the final 5-digit code"
+    ];
+
+    const correctAnswers = [
+      [2],
+      [3, 4],
+      [1, 8, 0],
+      [5, 6, 9, 7],
+      [1, 8, 9, 5, 7]
+    ];
+
+    const hintText = "Try 18957.";
+    const pyramid = [1, 2, 3, 4, 5];
+    let code = [1, 8, 9, 5, 7];
+    let currentStep = 0;
+    const questionsDiv = document.getElementById("questions");
+    const guessContainer = document.getElementById("guess-container");
+    const submitBtn = document.getElementById("submit");
+    const hintBtn = document.getElementById("hint-button");
+    const gameOverDiv = document.getElementById("game-over");
+    const starsDiv = document.getElementById("stars");
+    const startScreen = document.getElementById("start-screen");
+    const startButton = document.getElementById("start-button");
+    const timerDiv = document.getElementById("timer");
+    const hintDiv = document.getElementById("hint");
+
+    let startTime;
+    let timerInterval;
+    let rowElements = [];
+    let stars = 0;
+    let correctCount = 0;
+
+    function updateTimer() {
+      const now = new Date();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      timerDiv.textContent = `⏱ Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function getElapsedSeconds() {
+      return Math.floor((new Date() - startTime) / 1000);
+    }
+
+    function renderQuestion() {
+      const questionText = document.createElement("div");
+      questionText.className = "question-text";
+      questionText.textContent = questions[currentStep];
+      questionsDiv.appendChild(questionText);
+
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "row";
+      
+      for (let i = 0; i < pyramid[currentStep]; i++) {
+        const input = document.createElement("input");
+        input.className = "cell active";
+        input.maxLength = 1;
+        input.type = "text";
+        input.addEventListener("input", (e) => {
+          if (e.target.value.length === 1 && i < pyramid[currentStep] - 1) {
+            rowDiv.children[i + 1].focus();
+          }
+        });
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") submitBtn.click();
+          // Handle backspace/delete to move to previous field
+          if ((e.key === "Backspace" || e.key === "Delete") && e.target.value === "" && i > 0) {
+            rowDiv.children[i - 1].focus();
+          }
+        });
+        rowDiv.appendChild(input);
+      }
+      
+      // Add result span to the row
+      const resultSpan = document.createElement("span");
+      resultSpan.className = "row-result";
+      resultSpan.id = `result-${currentStep}`;
+      rowDiv.appendChild(resultSpan);
+      
+      guessContainer.appendChild(rowDiv);
+      rowElements.push(rowDiv);
+      rowDiv.children[0].focus();
+
+      hintBtn.style.display = currentStep === pyramid.length - 1 ? "inline-block" : "none";
+    }
+
+    function getInputValues() {
+      const activeInputs = document.querySelectorAll(".cell.active");
+      return Array.from(activeInputs).map(input => input.value.trim());
+    }
+
+    function evaluate(inputArr) {
+      const feedback = [];
+      const inputDigits = inputArr.map(val => isNaN(val) ? val : Number(val));
+      const isCorrect = inputDigits.every((val, i) => 
+        val === correctAnswers[currentStep][i] || 
+        (typeof val === 'string' && val.toUpperCase() === String(correctAnswers[currentStep][i]).toUpperCase())
+      );
+
+      // Update the result indicator
+      const resultSpan = document.getElementById(`result-${currentStep}`);
+      resultSpan.textContent = isCorrect ? "✅" : "❌";
+
+      if (isCorrect && currentStep < 4) {
+        correctCount++;
+      }
+
+      inputDigits.forEach((digit, i) => {
+        if (code[i] === digit) feedback.push("green");
+        else if (code.includes(digit)) feedback.push("yellow");
+        else feedback.push("gray");
+      });
+
+      const activeInputs = document.querySelectorAll(".cell.active");
+      activeInputs.forEach((input, i) => {
+        input.classList.remove("active");
+        input.classList.add(feedback[i]);
+        input.disabled = true;
+      });
+    }
+
+    submitBtn.addEventListener("click", () => {
+      const values = getInputValues();
+      const expectedLen = pyramid[currentStep];
+      if (values.length !== expectedLen || values.some(v => v === "")) {
+        alert("Please complete this guess.");
+        return;
+      }
+
+      evaluate(values);
+      currentStep++;
+
+      if (currentStep < pyramid.length) {
+        renderQuestion();
+      } else {
+        clearInterval(timerInterval);
+        const guess = values.map(val => isNaN(val) ? val : Number(val));
+        const isCorrect = guess.every((d, i) => d === code[i]);
+        gameOverDiv.textContent = isCorrect
+          ? "🎉 You cracked the code!"
+          : `❌ Incorrect. The code was ${code.join("")}`;
+        submitBtn.disabled = true;
+
+        if (isCorrect) {
+          if (getElapsedSeconds() <= 60) stars++;
+          stars += correctCount;
+        } else {
+          stars = 0;
+        }
+
+        const totalTime = getElapsedSeconds();
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        starsDiv.textContent = `⭐ Stars: ${stars} | ⏱ Total Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+      }
+    });
+
+    hintBtn.addEventListener("click", () => {
+      hintDiv.textContent = hintText;
+      hintDiv.style.display = "block";
+      hintBtn.disabled = true;
+    });
+
+    startButton.addEventListener("click", () => {
+      startScreen.style.display = "none";
+      startTime = new Date();
+      timerInterval = setInterval(updateTimer, 1000);
+      renderQuestion();
+    });
+  </script>
+</body>
+</html>
