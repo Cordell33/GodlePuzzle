@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<html>
-
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gödle</title>
-
   <style>
     body {
       font-family: sans-serif;
@@ -78,7 +75,7 @@
     }
     #submit { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; }
     #hint-button { margin-top: 0.5rem; padding: 0.4rem 1rem; font-size: 0.9rem; }
-    #game-over { margin-top: 1rem; font-size: 1.2rem; }
+    #game-over { margin-top: 1rem; font-size: 1.2rem; text-align: center; }
     #start-screen {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -106,9 +103,35 @@
       margin-top: 0.5rem;
       font-size: 1.5rem;
     }
+    .share-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+    .share-button {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .share-button.twitter { background: #1DA1F2; color: white; }
+    .share-button.facebook { background: #4267B2; color: white; }
+    .share-button.copy { background: #333; color: white; }
+    #copy-message {
+      margin-top: 0.5rem;
+      color: #00bcd4;
+      display: none;
+    }
+    #share-results {
+      margin-top: 1rem;
+      display: none;
+    }
   </style>
-
-  
 </head>
 <body>
   <div id="start-screen">
@@ -140,44 +163,52 @@
   <button id="hint-button" style="display: none;">Hint</button>
   <div id="stars"></div>
   <div id="game-over"></div>
+  
+  <div id="share-results">
+    <h3>Share Your Results</h3>
+    <div class="share-buttons">
+      <button class="share-button twitter" onclick="shareTwitter()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+        </svg>
+        Twitter
+      </button>
+      <button class="share-button facebook" onclick="shareFacebook()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
+        </svg>
+        Facebook
+      </button>
+      <button class="share-button copy" onclick="copyResults()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
+        </svg>
+        Copy Link
+      </button>
+    </div>
+    <div id="copy-message">Copied to clipboard!</div>
+  </div>
 
   <script>
     const questions = [
-      "Sum of current years digits !", 
+      "What is the square root of 4",
+      "17+17",
+      "What do supplemental angles add up to in degress",
+      "100.00-43.03=_ _. _ _",
+      "Enter the final 5-digit code"
+    ];
 
-      "LCM of 15 and 6 ", 
+    const correctAnswers = [
+      [2],
+      [3, 4],
+      [1, 8, 0],
+      [5, 6, 9, 7],
+      [1, 8, 9, 5, 7]
+    ];
 
-      "2^9", 
-
-      "10,000-1353", 
-
-      "Enter the final 5-digit code" 
-
-    ]; 
-
- 
-
-    const correctAnswers = [ 
-
-      [9], 
-
-      [3, 0], 
-
-      [5, 1, 2], 
-
-      [8, 6, 4, 7], 
-
-      [9, 6, 2, 0, 7] 
-
-    ]; 
-
- 
-
-    const hintText = "Try 96207."; 
-
-    const pyramid = [1, 2, 3, 4, 5]; 
-
-    let code = [9, 6, 2, 0, 7]; 
+    const hintText = "Try 18957.";
+    const pyramid = [1, 2, 3, 4, 5];
+    let code = [1, 8, 9, 5, 7];
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
@@ -189,12 +220,16 @@
     const startButton = document.getElementById("start-button");
     const timerDiv = document.getElementById("timer");
     const hintDiv = document.getElementById("hint");
+    const shareResults = document.getElementById("share-results");
+    const copyMessage = document.getElementById("copy-message");
 
     let startTime;
     let timerInterval;
     let rowElements = [];
     let stars = 0;
     let correctCount = 0;
+    let totalTime = 0;
+    let isCorrect = false;
 
     function updateTimer() {
       const now = new Date();
@@ -229,7 +264,6 @@
         });
         input.addEventListener("keydown", (e) => {
           if (e.key === "Enter") submitBtn.click();
-          // Handle backspace/delete to move to previous field
           if ((e.key === "Backspace" || e.key === "Delete") && e.target.value === "" && i > 0) {
             rowDiv.children[i - 1].focus();
           }
@@ -237,7 +271,6 @@
         rowDiv.appendChild(input);
       }
       
-      // Add result span to the row
       const resultSpan = document.createElement("span");
       resultSpan.className = "row-result";
       resultSpan.id = `result-${currentStep}`;
@@ -258,12 +291,11 @@
     function evaluate(inputArr) {
       const feedback = [];
       const inputDigits = inputArr.map(val => isNaN(val) ? val : Number(val));
-      const isCorrect = inputDigits.every((val, i) => 
+      isCorrect = inputDigits.every((val, i) => 
         val === correctAnswers[currentStep][i] || 
         (typeof val === 'string' && val.toUpperCase() === String(correctAnswers[currentStep][i]).toUpperCase())
       );
 
-      // Update the result indicator
       const resultSpan = document.getElementById(`result-${currentStep}`);
       resultSpan.textContent = isCorrect ? "✅" : "❌";
 
@@ -285,6 +317,31 @@
       });
     }
 
+    function showShareButtons() {
+      shareResults.style.display = "block";
+    }
+
+    function shareTwitter() {
+      const text = `I solved Gödle in ${totalTime} seconds with ${stars} stars! Try it yourself: ${window.location.href}`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    function shareFacebook() {
+      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+      window.open(url, '_blank');
+    }
+
+    function copyResults() {
+      const text = `I solved Gödle in ${totalTime} seconds with ${stars} stars! Try it yourself: ${window.location.href}`;
+      navigator.clipboard.writeText(text).then(() => {
+        copyMessage.style.display = "block";
+        setTimeout(() => {
+          copyMessage.style.display = "none";
+        }, 2000);
+      });
+    }
+
     submitBtn.addEventListener("click", () => {
       const values = getInputValues();
       const expectedLen = pyramid[currentStep];
@@ -301,23 +358,25 @@
       } else {
         clearInterval(timerInterval);
         const guess = values.map(val => isNaN(val) ? val : Number(val));
-        const isCorrect = guess.every((d, i) => d === code[i]);
-        gameOverDiv.textContent = isCorrect
-          ? "🎉 You cracked the code!"
+        isCorrect = guess.every((d, i) => d === code[i]);
+        totalTime = getElapsedSeconds();
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        
+        gameOverDiv.innerHTML = isCorrect
+          ? `🎉 You cracked the code in ${minutes}:${seconds.toString().padStart(2, '0')}!<br>⭐ Stars: ${stars}`
           : `❌ Incorrect. The code was ${code.join("")}`;
+        
         submitBtn.disabled = true;
 
         if (isCorrect) {
-          if (getElapsedSeconds() <= 60) stars++;
+          if (totalTime <= 60) stars++;
           stars += correctCount;
+          starsDiv.textContent = `⭐ Stars: ${stars}`;
+          showShareButtons();
         } else {
           stars = 0;
         }
-
-        const totalTime = getElapsedSeconds();
-        const minutes = Math.floor(totalTime / 60);
-        const seconds = totalTime % 60;
-        starsDiv.textContent = `⭐ Stars: ${stars} | ⏱ Total Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
       }
     });
 
