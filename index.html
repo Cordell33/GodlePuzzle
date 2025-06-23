@@ -306,7 +306,7 @@
         const input = document.createElement("input");
         input.className = "cell active";
         input.maxLength = 1;
- // Only allow numbers for math questions (not for Spanish word)
+ // Only allow numbers for math questions 
         if (currentStep !== 0) {
           input.type = "number";
           input.pattern = "[0-9]*";
