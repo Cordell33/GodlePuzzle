@@ -230,24 +230,25 @@
 
   <script>
     const questions = [
-     "Solve for y; 4y=12",
-      "12*6=?",
-      "13 rolls of pennies equals, $_._ _ ",
-      "Last time LA hosted the Olympics",
+    "Siete",
+      "Half of a right angle (degrees)",
+      "13*13? ",
+      "11:08pm in military time _ _:_ _" ,
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [3],
-      [7, 2],
-      [6, 5, 0],
-      [1, 9, 8, 4],
-      [6, 0, 8, 4, 2]
+      [7],
+      [4, 5],
+      [1, 6, 9],
+      [2, 3, 0, 8],
+      [7, 5, 9, 1, 8]
     ];
 
-    const hintText = "3,72,650,1984.";
+    const hintText = "7,45,169,2308.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [6, 0, 8, 4, 2];
+    let code = [7, 5, 9, 1, 8];
+
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
@@ -342,7 +343,6 @@
         (typeof val === 'string' && val.toUpperCase() === String(correctAnswers[currentStep][i]).toUpperCase())
       );
 
-      // Update the result indicator next to the question
       const resultSpan = document.getElementById(`result-${currentStep}`);
       resultSpan.textContent = isCorrect ? "✅" : "❌";
 
@@ -444,4 +444,5 @@
   </script>
 </body>
 </html>
+
 
