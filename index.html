@@ -157,7 +157,6 @@
       text-align: center;
       padding: 1rem;
     }
-
     @media (max-width: 600px) {
       body {
         padding: 1rem;
@@ -175,7 +174,7 @@
   </style>
 </head>
 <body>
-  <div id="start-screen">
+   <div id="start-screen">
     <h1>Welcome to Gödle</h1>
     <p>A puzzle that uses logic and math to crack a daily code</p>
     <ul style="text-align: left; max-width: 400px;">
@@ -307,6 +306,13 @@
         const input = document.createElement("input");
         input.className = "cell active";
         input.maxLength = 1;
+ // Only allow numbers for math questions (not for Spanish word)
+        if (currentStep !== 0) {
+          input.type = "number";
+          input.pattern = "[0-9]*";
+          input.inputMode = "numeric";
+        }
+        
         input.type = "text";
         input.addEventListener("input", (e) => {
           if (e.target.value.length === 1 && i < pyramid[currentStep] - 1) {
@@ -445,4 +451,4 @@
 </body>
 </html>
 
-
+ 
