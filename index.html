@@ -229,24 +229,26 @@
 
 <script>
     const questions = [
-  "3(2+1)",
-      "Solve x^2 -6x +5=0; x=_,_ least to greatest",
-      "Malaysian flight that disappeared in 2014, flight MH___",
-      "2 * 1234",
+  "999/333 = ?",
+      "1+2+3+....+8+9 = ?",
+      "133 * 6 = ?",
+      "_ _ * 5 = _ _" ,
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [9],
-      [1, 5],
-      [3, 7, 0],
-      [2, 4, 6, 8],
-      [1, 7, 0, 9, 8]
+      [3],
+      [4, 5],
+      [7, 9, 8],
+      [1, 2, 6, 0],
+      [1, 2, 8, 5, 0]
     ];
 
-    const hintText = "9,15,370,2468.";
+    const hintText = "3,45,798,1260.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [1, 7, 0, 9, 8];
+    let code = [1, 2, 8, 5, 0];
+
+
 
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
@@ -450,4 +452,3 @@
   </script>
 </body>
 </html>
-
