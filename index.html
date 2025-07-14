@@ -230,25 +230,24 @@
 <script>
     const questions = [
 
-"A cube has how many dimensions?",
-      "3 x 3 x 3 -1 =" , 
-      "1160 / 2 =",
-      "The Rubik’s cube was invented this year?" ,
+"3 + 3 + 3 = A, What is A?",
+      "A * 2 = B, What is B?" ,
+      "B^2 = C, What is C?" , 
+      "(C-A)*B = D, What is D?" ,
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [3],
-      [2, 6],
-      [5, 8, 0],
-      [1, 9, 7, 4],
-      [3, 8, 9, 4, 0]
+      [9],
+      [1, 8],
+      [3, 2, 4],
+      [5, 6, 7, 0],
+      [9, 8, 7, 4, 0]
     ];
 
-    const hintText = "3,26,580,1974.";
+    const hintText = "9,18,325,5670.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [3, 8, 9, 4, 0];
-
+    let code = [9, 8, 7, 4, 0];
 
 
     let currentStep = 0;
@@ -453,4 +452,3 @@
   </script>
 </body>
 </html>
-
