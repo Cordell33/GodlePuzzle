@@ -230,25 +230,26 @@
 <script>
     const questions = [
 
-"Number of continents?",  
-      "2 cents from a dollar" ,
-      "22 * 23 = ?" ,
-      "The first four counting numbers?" ,
+"If y = 4x + 7, what is y when x = 0? ",
+      "136 / 2 = ?" , 
+      "Number of countries according to the UN (both member and non)?" , 
+      "Some born today will be an adult in what year (18 years)?" ,
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
       [7],
-      [9, 8],
-      [5, 0, 6],
-      [1, 2, 3, 4],
-      [8, 0, 6, 4, 1]
+      [6, 8],
+      [1, 9, 5],
+      [2, 0, 4, 3],
+      [2, 8, 5, 3, 8]
     ];
 
-   const hintText = "7,98,506,1234.";
+    const hintText = "7,68,195,2043.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [8, 0, 6, 4, 1];
+    let code = [2, 3, 5, 3, 8];
   
+
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
