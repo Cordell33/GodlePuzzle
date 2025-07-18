@@ -230,26 +230,26 @@
 <script>
     const questions = [
 
-"If y = 4x + 7, what is y when x = 0? ",
-      "136 / 2 = ?" , 
-      "Number of countries according to the UN (both member and non)?" , 
-      "Someone born today will be an adult in what year (18 years)?" ,
+"A^2 + B^2 = C^2, A=3, B=4, find C?",
+      "A quarter and a penny in cents?",
+      "12 x 12 - 1 =" ,
+      "81, 84, __, __, 93" ,
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [7],
-      [6, 8],
-      [1, 9, 5],
-      [2, 0, 4, 3],
-      [2, 9, 5, 3, 8]
+      [5],
+      [2, 6],
+      [1, 4, 3],
+      [8, 7, 9, 0],
+      [1, 6, 9, 4, 0]
     ];
 
-    const hintText = "7,68,195,2043.";
+    const hintText = "5,26,143,8790.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [2, 9, 5, 3, 8];
-  
+    let code = [1, 6, 9, 4, 0];
 
+  
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
