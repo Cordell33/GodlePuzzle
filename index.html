@@ -230,25 +230,25 @@
 <script>
     const questions = [
 
-"This “magic” pool ball is said to predict the future?",
-      "Solve the system: y = 2x , y = x+3; (x, y)", 
-      "3 and a half minutes in seconds:",
-      "_ _ - 52 = _ _",
+"If a^2 + b^2 = c^2, find b if a = 12 and c=13",
+      "Solve for x: 25 - x = 13; x = ?",
+      "If you roasted the number “609” 180 degrees, what number would you get?",
+      "Roman numerals: MMMDCCLXXIV",
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [8],
-      [3, 6],
-      [2, 1, 0],
-      [9, 7, 4, 5],
-      [9, 6, 4, 7, 5]
+      [5],
+      [1, 2],
+      [6, 0, 9],
+      [3, 8, 7, 4],
+      [2, 0, 9, 4, 5]
     ];
 
-    const hintText = "8,36,210,9745.";
+    const hintText = "5,12,609,3874.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [9, 6, 4, 7, 5];
-      
+    let code = [2, 0, 9, 4, 5];
+
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
@@ -451,6 +451,7 @@
   </script>
 </body>
 </html>
+
 
 
 
