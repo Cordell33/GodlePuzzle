@@ -229,24 +229,24 @@
 
 <script>
    const questions = [
-"According to Merriam-Webster, there are traditionally how many parts of speech?",
-      "How many nickels make one dollar?.",
-      "28 * 13 = ?",
-      "__ / 3 = __",
+"(a-x)*(b-x)*(c-x)....(x-x)*(y-x)*(z-x)=?",
+      "...35, 50, 65, 80, __, 106... ",
+      "277 * 3 = ?",
+      "X - 12 = Y, X < 75, (X,Y) ",
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [8],
-      [2, 0],
-      [3, 6, 4],
-      [5, 7, 1, 9],
-      [4, 0, 1, 9, 2]
+      [0],
+      [9, 5],
+      [8, 3, 1],
+      [7, 4, 6, 2],
+      [8, 3, 1, 2, 5]
     ];
 
-    const hintText = "8,20,364,5719.";
+    const hintText = "0,95,831,7462.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [4, 0, 1, 9, 2];
+    let code = [8, 3, 1, 2, 5];
 
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
@@ -450,6 +450,7 @@
   </script>
 </body>
 </html>
+
 
 
 
