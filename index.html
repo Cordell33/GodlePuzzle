@@ -229,25 +229,25 @@
 
 <script>
    const questions = [
-"1 * 2 * 3 = ? ",
-      "5(3)(1) = ?  ",
-      "9 • 8 • 10 = ?",
-      "102 x 92 = ?  ",
+"If a=b+1, and b=3c, find ‘a’ when c=2",
+      "How many ways can you choose 2 crayons out of the classic (8) crayola box? ",
+      "What comes before 911? ",
+      " 66^ 2 = ?  ",
       "Enter the final 5-digit code"
     ];
 
     const correctAnswers = [
-      [6],
-      [1, 5],
-      [7, 2, 0],
-      [9, 3, 8, 4],
-      [7, 5, 0, 6, 4]
+      [7],
+      [2, 8],
+      [9, 1, 0],
+      [4, 3, 5, 6],
+      [7, 1, 4, 6, 0]
     ];
 
-    const hintText = "6,15,720,9384.";
+    const hintText = "7,28,910,4356.";
     const pyramid = [1, 2, 3, 4, 5];
-    let code = [7, 5, 0, 6, 4];
-
+    let code = [7, 1, 4, 6, 0];
+  
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
@@ -450,6 +450,7 @@
   </script>
 </body>
 </html>
+
 
 
 
