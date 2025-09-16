@@ -229,24 +229,25 @@
 
 <script>
    const questions = [
- "How many dwarves did Snow White meet?",
-    "How many minutes are in a quarter hour?",
-    "103 × 3 = ?",
-    "Compute 112 × 25 + 64 = ?",
+ "If y=3x+3 and 4x=y; find x ",
+    "Now find y ",
+    "Write which is greater: 818 / 2 or 98*5 ",
+    "Compute 1955 × 3 + 2 = ?",
     "Enter the final 5-digit code"
   ];
 
   const correctAnswers = [
-    [7],
-    [1, 5],
-    [3, 0, 9],
-    [2, 8, 6, 4],
-    [7, 5, 9, 4, 2]
+    [3],
+    [1, 2],
+    [4, 9, 0],
+    [5, 8, 6, 7],
+    [4, 0, 6, 7, 2]
   ];
 
-  const hintText = "7,15,309,2864.";
+  const hintText = "3,12,490,5867.";
   const pyramid = [1, 2, 3, 4, 5];
-  let code = [7, 5, 9, 4, 2];
+  let code = [4, 0, 6, 7, 2];
+
   
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
@@ -450,6 +451,7 @@
   </script>
 </body>
 </html>
+
 
 
 
