@@ -5,192 +5,311 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gödle</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #121212;
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #121212; 
+      color: #eee; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
       padding: 2rem;
+      margin: 0;
+      min-height: 100vh;
     }
-    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-    .game-area {
-      display: flex;
-      align-items: flex-start;
-      gap: 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
+    h1 { 
+      font-size: 2.8rem; 
+      margin-bottom: 1rem; 
+      color: #00bcd4;
+      text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
     }
-    .questions {
-      font-size: 1.2rem;
-      min-width: 220px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    .game-area { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 2rem; 
+      flex-wrap: wrap; 
+      justify-content: center; 
+      margin: 1rem 0;
     }
-    .question-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .questions { 
+      font-size: 1.2rem; 
+      min-width: 280px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 1rem; 
     }
-    .question-text {
-      background-color: #333;
-      border-left: 4px solid #00bcd4;
-      padding: 0.5rem;
-      font-weight: bold;
-      border-radius: 4px;
+    .question-container { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+    }
+    .question-text { 
+      background-color: #333; 
+      border-left: 4px solid #00bcd4; 
+      padding: 0.8rem; 
+      font-weight: bold; 
+      border-radius: 4px; 
       flex-grow: 1;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
-    .question-result {
-      font-size: 1.5rem;
-    }
-    .hint-text {
-      background-color: #333;
-      border-left: 4px solid #ff9800;
-      padding: 0.5rem;
-      font-style: italic;
-      border-radius: 4px;
-      margin-top: 1rem;
-      display: none;
-    }
-    .guesses {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      width: 100%;
-      max-width: 17rem;
-    }
-    .row {
-      display: flex;
-      margin: 0.5rem 0;
-      justify-content: flex-start;
-      align-items: center;
-    }
-    .cell {
-      width: 2.5rem;
-      height: 2.5rem;
-      font-size: 1.2rem;
-      margin: 0.15rem;
+    .question-result { 
+      font-size: 1.8rem; 
+      min-width: 40px;
       text-align: center;
-      border: 2px solid #444;
+    }
+    .hint-text { 
+      background-color: #333; 
+      border-left: 4px solid #ff9800; 
+      padding: 0.8rem; 
+      font-style: italic; 
+      border-radius: 4px; 
+      margin-top: 1rem; 
+      display: none;
+      animation: fadeIn 0.5s ease-in;
+    }
+    .guesses { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: flex-start; 
+      width: 100%; 
+      max-width: 20rem; 
+    }
+    .row { 
+      display: flex; 
+      margin: 0.5rem 0; 
+      justify-content: flex-start; 
+      align-items: center; 
+    }
+    .cell { 
+      width: 3rem; 
+      height: 3rem; 
+      font-size: 1.5rem; 
+      margin: 0.2rem; 
+      text-align: center; 
+      border: 2px solid #444; 
+      border-radius: 8px; 
+      background: #222; 
+      color: white;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .cell:focus {
+      outline: none;
+      border-color: #00bcd4;
+      box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+    }
+    .cell.green { 
+      background: #2ecc71; 
+      border-color: #27ae60;
+      transform: scale(1.05);
+    }
+    .cell.yellow { 
+      background: #f39c12; 
+      border-color: #d35400;
+      transform: scale(1.05);
+    }
+    .cell.gray { 
+      background: #7f8c8d; 
+      border-color: #636e72;
+    }
+    #submit, #hint-button { 
+      margin-top: 1.5rem; 
+      padding: 0.8rem 1.5rem; 
+      font-size: 1.1rem; 
+      width: 100%; 
+      max-width: 300px; 
+      border: none;
       border-radius: 8px;
-      background: #222;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    #submit {
+      background: #00bcd4;
       color: white;
     }
-    .cell.green { background: green; }
-    .cell.yellow { background: goldenrod; }
-    .cell.gray { background: #444; }
-    #submit, #hint-button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      width: 100%;
-      max-width: 300px;
+    #submit:hover {
+      background: #0097a7;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    #hint-button {
+      background: #ff9800;
+      color: white;
+    }
+    #hint-button:hover {
+      background: #f57c00;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
     #game-over { 
-      margin-top: 1rem; 
-      font-size: 1.2rem; 
+      margin-top: 1.5rem; 
+      font-size: 1.5rem; 
       text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      animation: fadeIn 0.5s ease-in;
+      display: none; /* hidden until end */
     }
-    #start-screen {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #121212;
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
+    #start-screen { 
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0; 
+      background: #121212; 
+      color: #eee; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      text-align: center; 
+      padding: 2rem; 
       z-index: 999;
+      animation: fadeIn 0.5s ease-in;
     }
-    #start-button {
-      margin-top: 1rem;
-      padding: 0.5rem 1.5rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-    #timer {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-    }
-    #stars {
-      margin-top: 0.5rem;
-      font-size: 1.5rem;
-    }
-    .share-buttons {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .share-button {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
+    #start-button { 
+      margin-top: 2rem; 
+      padding: 1rem 2rem; 
+      font-size: 1.3rem; 
+      cursor: pointer; 
+      background: #00bcd4;
+      color: white;
       border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    #start-button:hover {
+      background: #0097a7;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    #timer { 
+      margin-top: 1rem; 
+      font-size: 1.3rem; 
+      color: #00bcd4;
+      font-weight: bold;
+    }
+    #stars { 
+      margin-top: 1rem; 
+      font-size: 1.8rem; 
+      color: gold;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    .share-buttons { 
+      display: flex; 
+      gap: 1rem; 
+      margin-top: 1.5rem; 
+      justify-content: center; 
+      flex-wrap: wrap; 
+    }
+    .share-button { 
+      padding: 0.8rem 1.5rem; 
+      border-radius: 8px; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 1rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .share-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
     .share-button.twitter { background: #1DA1F2; color: white; }
     .share-button.facebook { background: #4267B2; color: white; }
     .share-button.copy { background: #333; color: white; }
-    #copy-message {
-      margin-top: 0.5rem;
+    #copy-message { 
+      margin-top: 1rem; 
+      color: #00bcd4; 
+      display: none;
+      animation: fadeIn 0.5s ease-in;
+    }
+    #share-results { 
+      margin-top: 2rem; 
+      display: none; 
+      text-align: center;
+      animation: fadeIn 0.5s ease-in;
+    }
+    footer { 
+      margin-top: 3rem; 
+      font-size: 0.9rem; 
+      color: #777; 
+      text-align: center; 
+      padding: 1.5rem;
+      border-top: 1px solid #333;
+      width: 100%;
+      max-width: 600px;
+    }
+    footer a {
       color: #00bcd4;
-      display: none;
+      text-decoration: none;
+      transition: color 0.3s ease;
     }
-    #share-results {
-      margin-top: 1rem;
-      display: none;
-      text-align: center;
-    }
-    footer {
-      margin-top: 2rem;
-      font-size: 0.8rem;
-      color: #777;
-      text-align: center;
-      padding: 1rem;
+    footer a:hover {
+      color: #ff9800;
+      text-decoration: underline;
     }
     @media (max-width: 600px) {
-      body {
-        padding: 1rem;
+      body { padding: 1rem; }
+      .cell { width: 2.8rem; height: 2.8rem; font-size: 1.3rem; }
+      .game-area { flex-direction: column; align-items: center; }
+      .questions { min-width: 100%; }
+      h1 { font-size: 2.2rem; }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: #f39c12;
+      opacity: 0.7;
+      animation: confetti-fall 5s linear forwards;
+      z-index: 1000;
+    }
+    
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
       }
-      .cell {
-        width: 2.2rem;
-        height: 2.2rem;
-        font-size: 1rem;
-      }
-      .game-area {
-        flex-direction: column;
-        align-items: center;
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
       }
     }
   </style>
 </head>
 <body>
-   <div id="start-screen">
+  <div id="start-screen">
     <h1>Welcome to Gödle</h1>
     <p>A puzzle that uses logic and math to crack a daily code</p>
-    <ul style="text-align: left; max-width: 400px;">
-      <li>Answer 4 questions using every digit (0-9) once. </li>
+    <ul style="text-align: left; max-width: 500px;">
+      <li>Answer 4 questions using every digit (0-9) <b>once</b>.</li>
       <li>This will help determine what the final code is.</li>
       <li>Green = correct digit & position, Yellow = correct digit, wrong position.</li>
       <li>See how fast you can get it.</li>
       <li>Answer in under a minute for an extra star.</li>
       <li>Share this with your friends.</li>
-      <li>Good Luck!.</li>
+      <li>Good Luck!</li>
     </ul>
     <button id="start-button">Start Game</button>
   </div>
 
+  <div id="auth-bar" style="width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 0.25rem;">
+    <div id="user-info">Guest</div>
+    <div id="streak" title="Daily streak">🔥 0-day streak</div>
+  </div>
+
   <h1>Gödle</h1>
-  <div id="timer"></div>
+
+  <div id="timer">⏱ Time: 0:00</div>
   <div class="game-area">
     <div class="questions" id="questions"></div>
     <div class="guesses" id="guess-container"></div>
@@ -199,60 +318,49 @@
   <button id="hint-button" style="display: none;">Hint</button>
   <div id="hint" class="hint-text"></div>
   <div id="stars"></div>
-  <div id="game-over"></div>
-  
+  <div id="game-over" aria-live="polite"></div>
+
   <div id="share-results">
     <h3>Share Your Results</h3>
     <div class="share-buttons">
-      <button class="share-button twitter" onclick="shareTwitter()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
-        </svg>
-        Twitter
-      </button>
-      <button class="share-button facebook" onclick="shareFacebook()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
-        </svg>
-        Facebook
-      </button>
-      <button class="share-button copy" onclick="copyResults()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
-        </svg>
-        Copy Link
-      </button>
+      <button class="share-button twitter" onclick="shareTwitter()" aria-label="Share results to Twitter">X/Twitter</button>
+      <button class="share-button facebook" onclick="shareFacebook()" aria-label="Share results to Facebook">Facebook</button>
+      <button class="share-button copy" onclick="copyResults()" aria-label="Copy results to clipboard">Copy Link</button>
     </div>
-    <div id="copy-message">Copied to clipboard!</div>
+    <div id="copy-message" aria-live="polite">Copied to clipboard!</div>
   </div>
-<footer>created by Cordell Booth • <a href="https://patreon.com/GodleCreator" target="_blank" style="color:#FF5733; text-decoration:none;">Donate</a> • <a href="https://www.facebook.com/groups/2109717096181882" target="_blank" style="color:#1DA1F2; text-decoration:none;">Community</a></footer>
 
-<script>
+  <footer>created by Cordell Booth • <a href="https://patreon.com/GodleCreator" target="_blank">Donate</a> • <a href="https://www.facebook.com/groups/2109717096181882" target="_blank">Community</a></footer>
+
+  <script>
+    // ====== PUZZLE CONTENT ======
+
    const questions = [
- "If y=3x+3 and 4x=y; find x ",
-    "Now find y ",
-    "Write which is greater: 818 / 2 or 98*5 ",
-    "Compute 1955 × 3 + 2 = ?",
+     "How many laws of motion did Newton discover?",
+    "If F=m*a, find force (in N) given that mass is 10 (kgs) and acceleration is 9.8 (m/s^2) ",
+    "If a bullet is shot out of a gun with 705 N of acceleration force,what’s the recoil force?",
+    "Newton was born this year on the Julian calendar?",
     "Enter the final 5-digit code"
   ];
 
   const correctAnswers = [
     [3],
-    [1, 2],
-    [4, 9, 0],
-    [5, 8, 6, 7],
-    [4, 0, 6, 7, 2]
+    [9, 8],
+    [7, 0, 5],
+    [1, 6, 4, 2],
+    [7, 0, 4, 5, 2]
   ];
 
-  const hintText = "3,12,490,5867.";
+  const hintText = "3,98,705,40672.";
   const pyramid = [1, 2, 3, 4, 5];
-  let code = [4, 0, 6, 7, 2];
+  let code = [7, 0, 4, 5, 2];
 
-  
+
+    // ====== GAME STATE & DOM ======
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
     const guessContainer = document.getElementById("guess-container");
-    const submitBtn = document.getElementById("submit");
+    const submitBtn = document.getElementById("submit"); // FIX: define before use
     const hintBtn = document.getElementById("hint-button");
     const gameOverDiv = document.getElementById("game-over");
     const starsDiv = document.getElementById("stars");
@@ -261,7 +369,8 @@
     const timerDiv = document.getElementById("timer");
     const hintDiv = document.getElementById("hint");
     const shareResults = document.getElementById("share-results");
-    const copyMessage = document.getElementById("copy-message");
+    const streakEl = document.getElementById("streak");
+    const userInfo = document.getElementById("user-info");
 
     let startTime;
     let timerInterval;
@@ -271,6 +380,65 @@
     let totalTime = 0;
     let isCorrect = false;
 
+    // ===== DAILY STREAK (LocalStorage only) =====
+    function todayKey(tz = "America/New_York") {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
+    }
+    function daysBetween(d1, d2) {
+      const a = new Date(`${d1}T00:00:00Z`), b = new Date(`${d2}T00:00:00Z`);
+      return Math.round((b - a) / 86400000);
+    }
+    function readLocalStreak() {
+      try { return JSON.parse(localStorage.getItem("godle_streak")) || { current:0, best:0, last:"" }; }
+      catch { return { current:0, best:0, last:"" }; }
+    }
+    function writeLocalStreak(data) {
+      localStorage.setItem("godle_streak", JSON.stringify(data));
+    }
+    function renderStreak(s) {
+      const current = s?.current || 0; const best = s?.best || 0;
+      const t = current === 1 ? "day" : "days";
+      streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
+    }
+    function updateStreakOnWin() {
+      const today = todayKey();
+      let s = readLocalStreak();
+      if (!s.last) {
+        s.current = 1; s.best = 1; s.last = today;
+      } else if (s.last === today) {
+        // already counted today — do nothing
+      } else {
+        const gap = daysBetween(s.last, today);
+        if (gap === 1) s.current += 1;
+        else if (gap > 1) s.current = 1;
+        s.best = Math.max(s.best, s.current);
+        s.last = today;
+      }
+      writeLocalStreak(s);
+      renderStreak(s);
+    }
+    // Initial render from localStorage on load
+    renderStreak(readLocalStreak());
+
+    // ===== INIT =====
+    function initGame() {
+      questionsDiv.innerHTML = '';
+      guessContainer.innerHTML = '';
+      gameOverDiv.innerHTML = '';
+      gameOverDiv.style.display = 'none';
+      starsDiv.innerHTML = '';
+      shareResults.style.display = 'none';
+      currentStep = 0;
+      stars = 0;
+      correctCount = 0;
+      totalTime = 0;
+      isCorrect = false;
+      submitBtn.disabled = false;
+      hintBtn.disabled = false;
+      hintDiv.style.display = 'none';
+      timerDiv.textContent = '⏱ Time: 0:00';
+    }
+
     function updateTimer() {
       const now = new Date();
       const elapsed = Math.floor((now - startTime) / 1000);
@@ -278,44 +446,40 @@
       const seconds = elapsed % 60;
       timerDiv.textContent = `⏱ Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
-
-    function getElapsedSeconds() {
-      return Math.floor((new Date() - startTime) / 1000);
+    
+    function getElapsedSeconds() { 
+      return Math.floor((new Date() - startTime) / 1000); 
     }
 
     function renderQuestion() {
       const questionContainer = document.createElement("div");
       questionContainer.className = "question-container";
-      
+
       const questionText = document.createElement("div");
       questionText.className = "question-text";
       questionText.textContent = questions[currentStep];
       questionContainer.appendChild(questionText);
-      
+
       const resultSpan = document.createElement("div");
       resultSpan.className = "question-result";
       resultSpan.id = `result-${currentStep}`;
       questionContainer.appendChild(resultSpan);
-      
+
       questionsDiv.appendChild(questionContainer);
       questionElements.push(questionContainer);
 
       const rowDiv = document.createElement("div");
       rowDiv.className = "row";
-      
       for (let i = 0; i < pyramid[currentStep]; i++) {
         const input = document.createElement("input");
         input.className = "cell active";
         input.maxLength = 1;
- // Only allow numbers for math questions 
-        if (currentStep !== 0) {
-          input.type = "tel";
-          input.pattern = "[0-9]*";
-          input.inputMode = "numeric";
-        }
-        
         input.type = "text";
+        input.inputMode = "numeric";
+        input.setAttribute('inputmode','numeric');
+        input.setAttribute('pattern','\\d');
         input.addEventListener("input", (e) => {
+          e.target.value = e.target.value.replace(/\D/g, '').slice(0,1);
           if (e.target.value.length === 1 && i < pyramid[currentStep] - 1) {
             rowDiv.children[i + 1].focus();
           }
@@ -330,11 +494,11 @@
       }
       
       guessContainer.appendChild(rowDiv);
-      rowDiv.children[0].focus();
+      if (rowDiv.firstChild) rowDiv.firstChild.focus();
 
       // Show hint button only on final question
       hintBtn.style.display = currentStep === pyramid.length - 1 ? "block" : "none";
-      hintDiv.style.display = "none"; // Hide hint when new question appears
+      hintDiv.style.display = "none";
     }
 
     function getInputValues() {
@@ -342,61 +506,87 @@
       return Array.from(activeInputs).map(input => input.value.trim());
     }
 
+    // Wordle-style duplicate handling
+    function colorFeedback(guess, codeArr) {
+      const res = Array(guess.length).fill('gray');
+      const counts = {};
+      codeArr.forEach((d) => { counts[d] = (counts[d] || 0) + 1; });
+      // pass 1: greens
+      guess.forEach((d,i) => {
+        if (codeArr[i] === d) { res[i] = 'green'; counts[d]--; }
+      });
+      // pass 2: yellows
+      guess.forEach((d,i) => {
+        if (res[i] === 'gray' && counts[d] > 0) { res[i] = 'yellow'; counts[d]--; }
+      });
+      return res;
+    }
+
     function evaluate(inputArr) {
-      const feedback = [];
       const inputDigits = inputArr.map(val => isNaN(val) ? val : Number(val));
-      isCorrect = inputDigits.every((val, i) => 
-        val === correctAnswers[currentStep][i] || 
+      isCorrect = inputDigits.every((val, i) =>
+        val === correctAnswers[currentStep][i] ||
         (typeof val === 'string' && val.toUpperCase() === String(correctAnswers[currentStep][i]).toUpperCase())
       );
 
       const resultSpan = document.getElementById(`result-${currentStep}`);
       resultSpan.textContent = isCorrect ? "✅" : "❌";
+      if (isCorrect && currentStep < 4) { correctCount++; }
 
-      if (isCorrect && currentStep < 4) {
-        correctCount++;
-      }
-
-      inputDigits.forEach((digit, i) => {
-        if (code[i] === digit) feedback.push("green");
-        else if (code.includes(digit)) feedback.push("yellow");
-        else feedback.push("gray");
-      });
-
+      const feedback = colorFeedback(inputDigits, code);
       const activeInputs = document.querySelectorAll(".cell.active");
-      activeInputs.forEach((input, i) => {
-        input.classList.remove("active");
-        input.classList.add(feedback[i]);
-        input.disabled = true;
+      activeInputs.forEach((input, i) => { 
+        input.classList.remove("active"); 
+        input.classList.add(feedback[i]); 
+        input.disabled = true; 
       });
     }
 
-    function showShareButtons() {
-      shareResults.style.display = "block";
-    }
+    function showShareButtons() { shareResults.style.display = "block"; }
 
     function shareTwitter() {
-      const text = `I solved Gödle in ${totalTime} seconds with ${stars} stars! Try it yourself: ${window.location.href}`;
-      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(buildShareText())}`, '_blank', 'noopener');
     }
-
     function shareFacebook() {
-      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
-      window.open(url, '_blank');
+      const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+      const win = window.open(shareUrl, 'fb-share-dialog', 'width=626,height=436');
+      if (!win) { copyResults(); alert('Facebook share popup was blocked. Your results were copied—paste into Facebook manually.'); }
     }
 
-    function copyResults() {
-      const text = `I solved Gödle in ${totalTime} seconds with ${stars} stars! Try it yourself: ${window.location.href}`;
-      navigator.clipboard.writeText(text).then(() => {
-        copyMessage.style.display = "block";
-        setTimeout(() => {
-          copyMessage.style.display = "none";
-        }, 2000);
-      });
+    function buildShareText() {
+      const minutes = Math.floor(totalTime / 60);
+      const seconds = totalTime % 60;
+      let grid = "";
+      const inputs = document.querySelectorAll(".cell");
+      let index = 0;
+      for (let r = 0; r < pyramid.length - 1; r++) {
+        let row = "";
+        for (let c = 0; c < pyramid[r]; c++) {
+          const cell = inputs[index++];
+          if (cell && cell.classList.contains("green")) row += "🟩";
+          else if (cell && cell.classList.contains("yellow")) row += "🟨";
+          else row += "⬛";
+        }
+        grid += (r > 0 ? "\n" : "") + row;
+      }
+      return `Gödle - I solved it in ${minutes}:${seconds.toString().padStart(2,'0')} with ${stars} stars! ⭐\n${grid}\n\nTry it yourself: ${window.location.href}`;
     }
 
-    // Fixed hint button functionality
+    async function copyResults() {
+      const text = buildShareText();
+      try {
+        await navigator.clipboard.writeText(text);
+        document.getElementById("copy-message").style.display = "block";
+        setTimeout(() => { document.getElementById("copy-message").style.display = "none"; }, 2000);
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        document.getElementById("copy-message").style.display = "block";
+        setTimeout(() => { document.getElementById("copy-message").style.display = "none"; }, 2000);
+      }
+    }
+
+    // === Hint button ===
     hintBtn.addEventListener("click", () => {
       hintDiv.textContent = hintText;
       hintDiv.style.display = "block";
@@ -404,6 +594,7 @@
       hintDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
+    // === Submit flow ===
     submitBtn.addEventListener("click", () => {
       const values = getInputValues();
       const expectedLen = pyramid[currentStep];
@@ -424,17 +615,18 @@
         totalTime = getElapsedSeconds();
         const minutes = Math.floor(totalTime / 60);
         const seconds = totalTime % 60;
-        
+        gameOverDiv.style.display = 'block';
         gameOverDiv.innerHTML = isCorrect
           ? `🎉 You cracked the code in ${minutes}:${seconds.toString().padStart(2, '0')}`
           : `❌ Incorrect. The code was ${code.join("")}`;
-        
+
         submitBtn.disabled = true;
 
         if (isCorrect) {
           if (totalTime <= 60) stars++;
           stars += correctCount;
           starsDiv.textContent = `⭐ Stars: ${stars}`;
+          updateStreakOnWin();
           showShareButtons();
         } else {
           stars = 0;
@@ -442,56 +634,24 @@
       }
     });
 
+    // === Start ===
     startButton.addEventListener("click", () => {
       startScreen.style.display = "none";
       startTime = new Date();
       timerInterval = setInterval(updateTimer, 1000);
+      initGame();
       renderQuestion();
+    });
+
+    // Optional: keep focused cell visible on mobile when keyboard opens
+    document.addEventListener('focusin', (e) => {
+      if (e.target.classList?.contains('cell')) {
+        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
