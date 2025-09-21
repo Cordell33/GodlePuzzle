@@ -336,27 +336,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"Septermebr is which month of the year?",
-"Which presidency number are we on in America?", 
-"53 x 2 = ?",
-"2133 x 4 = ?",
-"Enter the final 5-digit code"
-
-  ];
- const correctAnswers = [
-
-  [9],        
-  [4, 7],     
-  [1, 0, 6],  
-  [8, 5, 3, 2], 
-  [4, 0, 7, 2, 6] 
+"The only digit with an ‘x’ in its spelling",
+  "Unscramble; ytwnet- inen",
+  "If three is in the one’s place, one is in the hundred’s place, and four is in the ten’s place, what’s the number?",
+  "Write this number as a digit: “fifty , seventy-eight”.",
+  "Enter the final 5-digit code"
 ];
 
+const correctAnswers = [
+  [6],        // Q1
+  [2, 9],     // Q2
+  [1, 4, 3],  // Q3
+  [5, 0, 7, 8], // Q4
+  [6, 9, 0, 8, 7] // Final code
+];
 
-
-const hintText = "9,47,106,8532.";
-  const pyramid = [1, 2, 3, 4, 5];
-  let code = [4, 0, 7, 2, 6];
+const hintText = "6,29,103,5478.";
+const pyramid = [1, 2, 3, 4, 5];
+let code = [6, 9, 0, 8, 7];
     
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -654,6 +651,7 @@ const hintText = "9,47,106,8532.";
   </script>
 </body>
 </html>
+
 
 
 
