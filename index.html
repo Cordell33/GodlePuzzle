@@ -111,6 +111,10 @@
       background: #7f8c8d; 
       border-color: #636e72;
     }
+    .row.final-code .cell {
+  border: 2px solid #ff4444;
+  box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+}
     #submit, #hint-button { 
       margin-top: 1.5rem; 
       padding: 0.8rem 1.5rem; 
@@ -471,6 +475,10 @@ let code = [6, 9, 0, 8, 7];
       rowDiv.className = "row";
       for (let i = 0; i < pyramid[currentStep]; i++) {
         const input = document.createElement("input");
+        // Add special class for final code row
+        if (currentStep === pyramid.length - 1) {
+  rowDiv.classList.add("final-code");
+          }
         input.className = "cell active";
         input.maxLength = 1;
         input.type = "text";
@@ -651,7 +659,6 @@ let code = [6, 9, 0, 8, 7];
   </script>
 </body>
 </html>
-
 
 
 
