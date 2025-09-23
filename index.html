@@ -342,24 +342,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"How many faces does a cube have?",
-  "1 * 2 * 3 * 4 = ?",
-  "824 / 8 = ?",
-  "Arrange the digits 9, 5, 8, 7 in ascending order",
+"How many Great Lakes are there?",              
+  "The first odd with two unique digits?",         
+  "17 × 12 = ?",                                  
+  "X + 22 = Y; Y < 90" find (X,Y),    		
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [6],          // Q1 -> 6
-  [2, 4],       // Q2 -> 24
-  [1, 0, 3],    // Q3 -> 103
-  [5, 7, 8, 9], // Q4 -> 5789
-  [2, 8, 3, 9, 4] // Final code
+  [5],             
+  [1, 3],          
+  [2, 0, 4],        
+  [6, 7, 8, 9],    
+  [5, 4, 8, 9, 0]  
 ];
 
-const hintText = "6,24,103,5789.";
+const hintText = "5,13,204,6789.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [2, 8, 3, 9, 4];
+let code = [5, 4, 8, 9, 0];   
     
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -661,6 +661,7 @@ let code = [2, 8, 3, 9, 4];
   </script>
 </body>
 </html>
+
 
 
 
