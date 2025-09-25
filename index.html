@@ -30,6 +30,40 @@
       justify-content: center;
       margin: 1rem 0;
     }
+    .rules-card {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      margin: 0 0 1.5rem;
+    }
+    .rules-card h2 {
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      font-size: 1.6rem;
+      color: #00bcd4;
+      text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
+    }
+    .rules-card p {
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      color: #ddd;
+      line-height: 1.5;
+    }
+    .rules-card ul {
+      margin: 0;
+      padding-left: 1.3rem;
+      color: #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 1.05rem;
+    }
+    .rules-card ul b {
+      color: #fff;
+    }
     .questions { 
       font-size: 1.2rem; 
       min-width: 280px; 
@@ -217,25 +251,13 @@
     #side-menu h2 {
       margin: 0;
       color: #00bcd4;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
     }
     #side-menu p {
       margin: 0;
       color: #ddd;
       line-height: 1.4;
-    }
-    #side-menu ul {
-      margin: 0;
-      padding-left: 1.1rem;
-      color: #ccc;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      font-size: 0.95rem;
-    }
-    #side-menu ul b {
-      color: #fff;
     }
     #start-button {
       margin-top: auto;
@@ -421,16 +443,8 @@
   <button id="menu-toggle" type="button" aria-expanded="true" aria-controls="side-menu" aria-label="Toggle game menu">✕ Close</button>
   <div id="menu-backdrop" role="presentation"></div>
   <aside id="side-menu" aria-hidden="false" tabindex="-1">
-    <h2>Welcome to Gödle</h2>
-    <p>A puzzle that uses logic and math to crack a daily code.</p>
-    <ul>
-      <li>Answer 4 questions using every digit (0-9) <b>once</b>.</li>
-      <li>Use those clues to determine the final code.</li>
-      <li>Green = correct digit & position, Yellow = correct digit, wrong position.</li>
-      <li>Finish quickly to earn bonus stars.</li>
-      <li>Share your results with friends.</li>
-      <li>Good luck!</li>
-    </ul>
+    <h2>Game Menu</h2>
+    <p>Sign in to track your streak or restart the puzzle anytime.</p>
     <div class="login-panel" aria-live="polite">
       <form id="login-form">
         <label for="username-input">Player username</label>
@@ -447,10 +461,22 @@
 
   <div id="auth-bar" style="width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 0.25rem;">
     <div id="user-info">Guest</div>
-    <div id="streak" title="Daily streak">🔥 0-day streak</div>
+    <div id="streak" title="Daily streak">🔥 Guest play (streak not saved)</div>
   </div>
 
   <h1>Gödle</h1>
+
+  <section class="rules-card" aria-labelledby="rules-heading">
+    <h2 id="rules-heading">How to Play</h2>
+    <p>Crack the daily code by solving quick logic and math prompts, then combine your answers to guess the final digits.</p>
+    <ul>
+      <li>Answer 4 questions using every digit (0-9) <b>exactly once</b>.</li>
+      <li>Use your solutions as clues for the final 5-digit code.</li>
+      <li><b>Green</b> = correct digit & position, <b>Yellow</b> = correct digit, wrong position.</li>
+      <li>Beat the clock to earn bonus stars and share your results.</li>
+      <li>Need a reset? Open the menu and hit <b>Start Game</b> anytime.</li>
+    </ul>
+  </section>
 
   <div id="timer">⏱ Time: 0:00</div>
   <div class="game-area">
@@ -527,7 +553,9 @@ let code = [9, 2, 7, 1, 6];
     let correctCount = 0;
     let totalTime = 0;
     let isCorrect = false;
-    let currentUser = localStorage.getItem("godle_current_user") || "";
+    const defaultUser = "Guest";
+    const storedUser = localStorage.getItem("godle_current_user");
+    let currentUser = storedUser ? storedUser : defaultUser;
 
     function setMenuOpen(open) {
       document.body.classList.toggle("menu-open", open);
@@ -574,7 +602,7 @@ let code = [9, 2, 7, 1, 6];
       return Math.round((b - a) / 86400000);
     }
     function readLocalStreak() {
-      if (!currentUser) return { current: 0, best: 0, last: "" };
+      if (!currentUser || currentUser === defaultUser) return { current: 0, best: 0, last: "" };
       try {
         const data = localStorage.getItem(userStreakKey(currentUser));
         return data ? JSON.parse(data) : { current: 0, best: 0, last: "" };
@@ -583,12 +611,12 @@ let code = [9, 2, 7, 1, 6];
       }
     }
     function writeLocalStreak(data) {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === defaultUser) return;
       localStorage.setItem(userStreakKey(currentUser), JSON.stringify(data));
     }
     function renderStreak(s) {
-      if (!currentUser) {
-        streakEl.textContent = "🔥 Log in to track your streak";
+      if (!currentUser || currentUser === defaultUser) {
+        streakEl.textContent = "🔥 Guest play (streak not saved)";
         return;
       }
       const current = s?.current || 0;
@@ -597,7 +625,7 @@ let code = [9, 2, 7, 1, 6];
       streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
     }
     function updateStreakOnWin() {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === defaultUser) return;
       const today = todayKey();
       let s = readLocalStreak();
       if (!s.last) {
@@ -615,13 +643,13 @@ let code = [9, 2, 7, 1, 6];
       renderStreak(s);
     }
     function applyAuthState() {
-      if (currentUser) {
+      if (currentUser && currentUser !== defaultUser) {
         userInfo.textContent = `👤 ${currentUser}`;
         loginButton.textContent = "Switch User";
         logoutButton.style.display = "block";
         usernameInput.value = currentUser;
       } else {
-        userInfo.textContent = "Guest";
+        userInfo.textContent = defaultUser;
         loginButton.textContent = "Log In";
         logoutButton.style.display = "none";
         usernameInput.value = "";
@@ -648,7 +676,7 @@ let code = [9, 2, 7, 1, 6];
     });
 
     logoutButton.addEventListener("click", () => {
-      currentUser = "";
+      currentUser = defaultUser;
       localStorage.removeItem("godle_current_user");
       applyAuthState();
       usernameInput.focus();
