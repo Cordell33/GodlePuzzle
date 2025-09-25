@@ -259,24 +259,6 @@
       color: #ddd;
       line-height: 1.4;
     }
-    #start-button {
-      margin-top: auto;
-      padding: 1rem 1.25rem;
-      font-size: 1.15rem;
-      cursor: pointer;
-      background: #00bcd4;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-      width: 100%;
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-    #start-button:hover {
-      background: #0097a7;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
-    }
     .login-panel {
       margin-top: 1.5rem;
       background: rgba(255, 255, 255, 0.05);
@@ -444,7 +426,7 @@
   <div id="menu-backdrop" role="presentation"></div>
   <aside id="side-menu" aria-hidden="false" tabindex="-1">
     <h2>Game Menu</h2>
-    <p>Sign in to track your streak or restart the puzzle anytime.</p>
+    <p>Sign in to track your streak, then use the Start Game button below the board whenever you're ready to play.</p>
     <div class="login-panel" aria-live="polite">
       <form id="login-form">
         <label for="username-input">Player username</label>
@@ -456,7 +438,6 @@
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
     </div>
-    <button id="start-button" type="button">Start Game</button>
   </aside>
 
   <div id="auth-bar" style="width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 0.25rem;">
@@ -474,7 +455,7 @@
       <li>Use your solutions as clues for the final 5-digit code.</li>
       <li><b>Green</b> = correct digit & position, <b>Yellow</b> = correct digit, wrong position.</li>
       <li>Beat the clock to earn bonus stars and share your results.</li>
-      <li>Need a reset? Open the menu and hit <b>Start Game</b> anytime.</li>
+      <li>Click <b>Start Game</b> below to begin, then <b>Submit Guess</b> for each row.</li>
     </ul>
   </section>
 
@@ -535,7 +516,6 @@ let code = [9, 2, 7, 1, 6];
     const menuToggle = document.getElementById("menu-toggle");
     const menuBackdrop = document.getElementById("menu-backdrop");
     const sideMenu = document.getElementById("side-menu");
-    const startButton = document.getElementById("start-button");
     const timerDiv = document.getElementById("timer");
     const hintDiv = document.getElementById("hint");
     const shareResults = document.getElementById("share-results");
@@ -553,9 +533,12 @@ let code = [9, 2, 7, 1, 6];
     let correctCount = 0;
     let totalTime = 0;
     let isCorrect = false;
+    let gameActive = false;
     const defaultUser = "Guest";
     const storedUser = localStorage.getItem("godle_current_user");
     let currentUser = storedUser ? storedUser : defaultUser;
+
+    submitBtn.textContent = "Start Game";
 
     function setMenuOpen(open) {
       document.body.classList.toggle("menu-open", open);
@@ -672,7 +655,7 @@ let code = [9, 2, 7, 1, 6];
         writeLocalStreak({ current: 0, best: 0, last: "" });
       }
       applyAuthState();
-      startButton.focus();
+      submitBtn.focus();
     });
 
     logoutButton.addEventListener("click", () => {
@@ -865,6 +848,10 @@ let code = [9, 2, 7, 1, 6];
 
     // === Submit flow ===
     submitBtn.addEventListener("click", () => {
+      if (!gameActive) {
+        startGame();
+        return;
+      }
       const values = getInputValues();
       const expectedLen = pyramid[currentStep];
       if (values.length !== expectedLen || values.some(v => v === "")) {
@@ -900,6 +887,10 @@ let code = [9, 2, 7, 1, 6];
         } else {
           stars = 0;
         }
+
+        gameActive = false;
+        submitBtn.textContent = "Start Game";
+        submitBtn.disabled = false;
       }
     });
 
@@ -907,16 +898,14 @@ let code = [9, 2, 7, 1, 6];
       if (timerInterval) {
         clearInterval(timerInterval);
       }
-      setMenuOpen(false);
       initGame();
+      setMenuOpen(false);
       startTime = new Date();
       timerInterval = setInterval(updateTimer, 1000);
-      startButton.textContent = "Restart Puzzle";
+      gameActive = true;
+      submitBtn.textContent = "Submit Guess";
       renderQuestion();
     }
-
-    // === Start ===
-    startButton.addEventListener("click", startGame);
 
     // Optional: keep focused cell visible on mobile when keyboard opens
     document.addEventListener('focusin', (e) => {
