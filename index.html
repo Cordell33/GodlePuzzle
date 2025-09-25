@@ -22,12 +22,12 @@
       color: #00bcd4;
       text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
     }
-    .game-area { 
-      display: flex; 
-      align-items: flex-start; 
-      gap: 2rem; 
-      flex-wrap: wrap; 
-      justify-content: center; 
+    .game-area {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
       margin: 1rem 0;
     }
     .questions { 
@@ -157,40 +157,165 @@
       animation: fadeIn 0.5s ease-in;
       display: none; /* hidden until end */
     }
-    #start-screen { 
+    #menu-toggle {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0; 
-      background: #121212; 
-      color: #eee; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      text-align: center; 
-      padding: 2rem; 
-      z-index: 999;
-      animation: fadeIn 0.5s ease-in;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1100;
+      background: #00bcd4;
+      color: #121212;
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: background 0.2s ease, transform 0.2s ease;
     }
-    #start-button { 
-      margin-top: 2rem; 
-      padding: 1rem 2rem; 
-      font-size: 1.3rem; 
-      cursor: pointer; 
+    #menu-toggle:hover {
+      background: #00a0b7;
+      transform: translateY(-1px);
+    }
+    body.menu-open #menu-toggle {
+      background: #0097a7;
+      color: #fff;
+    }
+    #menu-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+    body.menu-open #menu-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #side-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: min(320px, 85vw);
+      background: #1b1b1b;
+      box-shadow: 8px 0 24px rgba(0, 0, 0, 0.45);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding: 1.5rem 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      overflow-y: auto;
+    }
+    body.menu-open #side-menu {
+      transform: translateX(0);
+    }
+    #side-menu h2 {
+      margin: 0;
+      color: #00bcd4;
+      font-size: 1.6rem;
+      text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
+    }
+    #side-menu p {
+      margin: 0;
+      color: #ddd;
+      line-height: 1.4;
+    }
+    #side-menu ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.95rem;
+    }
+    #side-menu ul b {
+      color: #fff;
+    }
+    #start-button {
+      margin-top: auto;
+      padding: 1rem 1.25rem;
+      font-size: 1.15rem;
+      cursor: pointer;
       background: #00bcd4;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: bold;
-      transition: all 0.3s ease;
+      width: 100%;
+      transition: background 0.3s ease, transform 0.3s ease;
     }
     #start-button:hover {
       background: #0097a7;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
     }
-    #timer { 
-      margin-top: 1rem; 
-      font-size: 1.3rem; 
+    .login-panel {
+      margin-top: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+    .login-panel label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .login-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .login-panel input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #1e1e1e;
+      color: #fff;
+      font-size: 1rem;
+    }
+    .login-panel input[type="text"]:focus {
+      outline: none;
+      border-color: #00bcd4;
+      box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+    }
+    .login-panel button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      background: #00bcd4;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .login-panel button:hover {
+      background: #0097a7;
+    }
+    #logout-button {
+      margin-top: 0.75rem;
+      width: 100%;
+      background: #ef5350;
+    }
+    #logout-button:hover {
+      background: #e53935;
+    }
+    .login-hint {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    #timer {
+      margin-top: 1rem;
+      font-size: 1.3rem;
       color: #00bcd4;
       font-weight: bold;
     }
@@ -293,20 +418,32 @@
   </style>
 </head>
 <body>
-  <div id="start-screen">
-    <h1>Welcome to Gödle</h1>
-    <p>A puzzle that uses logic and math to crack a daily code</p>
-    <ul style="text-align: left; max-width: 500px;">
+  <button id="menu-toggle" type="button" aria-expanded="true" aria-controls="side-menu" aria-label="Toggle game menu">✕ Close</button>
+  <div id="menu-backdrop" role="presentation"></div>
+  <aside id="side-menu" aria-hidden="false" tabindex="-1">
+    <h2>Welcome to Gödle</h2>
+    <p>A puzzle that uses logic and math to crack a daily code.</p>
+    <ul>
       <li>Answer 4 questions using every digit (0-9) <b>once</b>.</li>
-      <li>This will help determine what the final code is.</li>
+      <li>Use those clues to determine the final code.</li>
       <li>Green = correct digit & position, Yellow = correct digit, wrong position.</li>
-      <li>See how fast you can get it.</li>
-      <li>Answer in under a minute for an extra star.</li>
-      <li>Share this with your friends.</li>
-      <li>Good Luck!</li>
+      <li>Finish quickly to earn bonus stars.</li>
+      <li>Share your results with friends.</li>
+      <li>Good luck!</li>
     </ul>
-    <button id="start-button">Start Game</button>
-  </div>
+    <div class="login-panel" aria-live="polite">
+      <form id="login-form">
+        <label for="username-input">Player username</label>
+        <div class="login-row">
+          <input id="username-input" name="username" type="text" placeholder="Enter username" autocomplete="nickname" required />
+          <button type="submit" id="login-button">Log In</button>
+        </div>
+      </form>
+      <button id="logout-button" type="button" style="display: none;">Log Out</button>
+      <p class="login-hint">Your daily streak is saved per username on this device.</p>
+    </div>
+    <button id="start-button" type="button">Start Game</button>
+  </aside>
 
   <div id="auth-bar" style="width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 0.25rem;">
     <div id="user-info">Guest</div>
@@ -369,13 +506,19 @@ let code = [9, 2, 7, 1, 6];
     const hintBtn = document.getElementById("hint-button");
     const gameOverDiv = document.getElementById("game-over");
     const starsDiv = document.getElementById("stars");
-    const startScreen = document.getElementById("start-screen");
+    const menuToggle = document.getElementById("menu-toggle");
+    const menuBackdrop = document.getElementById("menu-backdrop");
+    const sideMenu = document.getElementById("side-menu");
     const startButton = document.getElementById("start-button");
     const timerDiv = document.getElementById("timer");
     const hintDiv = document.getElementById("hint");
     const shareResults = document.getElementById("share-results");
     const streakEl = document.getElementById("streak");
     const userInfo = document.getElementById("user-info");
+    const loginForm = document.getElementById("login-form");
+    const usernameInput = document.getElementById("username-input");
+    const loginButton = document.getElementById("login-button");
+    const logoutButton = document.getElementById("logout-button");
 
     let startTime;
     let timerInterval;
@@ -384,8 +527,45 @@ let code = [9, 2, 7, 1, 6];
     let correctCount = 0;
     let totalTime = 0;
     let isCorrect = false;
+    let currentUser = localStorage.getItem("godle_current_user") || "";
+
+    function setMenuOpen(open) {
+      document.body.classList.toggle("menu-open", open);
+      menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      menuToggle.setAttribute("aria-label", open ? "Close game menu" : "Open game menu");
+      menuToggle.textContent = open ? "✕ Close" : "☰ Menu";
+      sideMenu.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+    function toggleMenu() {
+      const isOpen = document.body.classList.contains("menu-open");
+      setMenuOpen(!isOpen);
+      if (isOpen) {
+        menuToggle.focus();
+      } else {
+        sideMenu.focus();
+      }
+    }
+    function closeMenu() {
+      if (document.body.classList.contains("menu-open")) {
+        setMenuOpen(false);
+        menuToggle.focus();
+      }
+    }
+
+    menuToggle.addEventListener("click", toggleMenu);
+    menuBackdrop.addEventListener("click", closeMenu);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    });
+
+    setMenuOpen(true);
 
     // ===== DAILY STREAK (LocalStorage only) =====
+    function userStreakKey(name) {
+      return `godle_user_${name}_streak`;
+    }
     function todayKey(tz = "America/New_York") {
       return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
     }
@@ -394,18 +574,30 @@ let code = [9, 2, 7, 1, 6];
       return Math.round((b - a) / 86400000);
     }
     function readLocalStreak() {
-      try { return JSON.parse(localStorage.getItem("godle_streak")) || { current:0, best:0, last:"" }; }
-      catch { return { current:0, best:0, last:"" }; }
+      if (!currentUser) return { current: 0, best: 0, last: "" };
+      try {
+        const data = localStorage.getItem(userStreakKey(currentUser));
+        return data ? JSON.parse(data) : { current: 0, best: 0, last: "" };
+      } catch {
+        return { current: 0, best: 0, last: "" };
+      }
     }
     function writeLocalStreak(data) {
-      localStorage.setItem("godle_streak", JSON.stringify(data));
+      if (!currentUser) return;
+      localStorage.setItem(userStreakKey(currentUser), JSON.stringify(data));
     }
     function renderStreak(s) {
-      const current = s?.current || 0; const best = s?.best || 0;
+      if (!currentUser) {
+        streakEl.textContent = "🔥 Log in to track your streak";
+        return;
+      }
+      const current = s?.current || 0;
+      const best = s?.best || 0;
       const t = current === 1 ? "day" : "days";
       streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
     }
     function updateStreakOnWin() {
+      if (!currentUser) return;
       const today = todayKey();
       let s = readLocalStreak();
       if (!s.last) {
@@ -422,8 +614,45 @@ let code = [9, 2, 7, 1, 6];
       writeLocalStreak(s);
       renderStreak(s);
     }
-    // Initial render from localStorage on load
-    renderStreak(readLocalStreak());
+    function applyAuthState() {
+      if (currentUser) {
+        userInfo.textContent = `👤 ${currentUser}`;
+        loginButton.textContent = "Switch User";
+        logoutButton.style.display = "block";
+        usernameInput.value = currentUser;
+      } else {
+        userInfo.textContent = "Guest";
+        loginButton.textContent = "Log In";
+        logoutButton.style.display = "none";
+        usernameInput.value = "";
+      }
+      renderStreak(readLocalStreak());
+    }
+    applyAuthState();
+
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = usernameInput.value.trim();
+      if (!name) {
+        alert("Enter a username to log in.");
+        usernameInput.focus();
+        return;
+      }
+      currentUser = name;
+      localStorage.setItem("godle_current_user", currentUser);
+      if (!localStorage.getItem(userStreakKey(currentUser))) {
+        writeLocalStreak({ current: 0, best: 0, last: "" });
+      }
+      applyAuthState();
+      startButton.focus();
+    });
+
+    logoutButton.addEventListener("click", () => {
+      currentUser = "";
+      localStorage.removeItem("godle_current_user");
+      applyAuthState();
+      usernameInput.focus();
+    });
 
     // ===== INIT =====
     function initGame() {
@@ -440,7 +669,10 @@ let code = [9, 2, 7, 1, 6];
       isCorrect = false;
       submitBtn.disabled = false;
       hintBtn.disabled = false;
+      hintBtn.style.display = 'none';
       hintDiv.style.display = 'none';
+      hintDiv.textContent = '';
+      questionElements = [];
       timerDiv.textContent = '⏱ Time: 0:00';
     }
 
@@ -643,14 +875,20 @@ let code = [9, 2, 7, 1, 6];
       }
     });
 
-    // === Start ===
-    startButton.addEventListener("click", () => {
-      startScreen.style.display = "none";
+    function startGame() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+      setMenuOpen(false);
+      initGame();
       startTime = new Date();
       timerInterval = setInterval(updateTimer, 1000);
-      initGame();
+      startButton.textContent = "Restart Puzzle";
       renderQuestion();
-    });
+    }
+
+    // === Start ===
+    startButton.addEventListener("click", startGame);
 
     // Optional: keep focused cell visible on mobile when keyboard opens
     document.addEventListener('focusin', (e) => {
