@@ -342,25 +342,25 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
- "27/9  * sqrt(2+0+2+5)",                 
-  "The worth of a US dime in cents?",            
-  "1100 split into 4 equal parts?",                    
-  "2(X) = Y, Y < 70 find (X,Y)",                                      
+ "How many legs does an insect have?",                         
+  "Do most months have 30 or 31 days in them?",                             
+  "77 × 11 = ?",                                                
+  "Equivalent fraction for 4/19 (with remaining digits: __/__) ",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [9],           
-  [1, 0],        
-  [2, 7, 5],     
-  [3, 4, 6, 8],  
-  [9, 4, 5, 8, 6] 
+  [6],          
+  [3, 1],       
+  [8, 4, 7],    
+  [2, 0, 9, 5], 
+  [6, 7, 9, 5, 1] 
 ];
 
-const hintText = "9,10,275,3468.";
+const hintText = "6,31,847,2059.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [9, 4, 5, 8, 6];
-    
+let code = [6, 7, 9, 5, 1]; 
+
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
@@ -661,6 +661,7 @@ let code = [9, 4, 5, 8, 6];
   </script>
 </body>
 </html>
+
 
 
 
