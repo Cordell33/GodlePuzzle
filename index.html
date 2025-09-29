@@ -304,6 +304,18 @@
     .login-panel button:hover {
       background: #0097a7;
     }
+    .login-panel .external-link {
+      margin-top: 0.75rem;
+      display: inline-block;
+      color: #00bcd4;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .login-panel .external-link:hover {
+      color: #ff9800;
+      text-decoration: underline;
+    }
     #logout-button {
       margin-top: 0.75rem;
       width: 100%;
@@ -435,6 +447,7 @@
           <button type="submit" id="login-button">Log In</button>
         </div>
       </form>
+      <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
     </div>
