@@ -342,24 +342,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"49 ÷ 7 = ?",
-  "18 * (6 ÷ 3) = ?",
-  "The square of 22, plus 7 = ?.",
-  "58 * 1000 + 2  = ? ",
+"How many bits are in a byte?",
+  "√196 = ? ",
+  "550 ÷ 2 = ? ",
+  "10,000 − 937 = ? ",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [7],          // Q1
-  [3, 6],       // Q2
-  [4, 9, 1],    // Q3
-  [5, 8, 0, 2], // Q4
-  [3, 9, 0, 2, 7] // Final code
+  [8],          // Q1 -> 8
+  [1, 4],       // Q2 -> 14
+  [2, 7, 5],    // Q3 -> 275
+  [9, 0, 6, 3], // Q4 -> 9063  
+  [8, 4, 2, 3, 6] 
 ];
 
-const hintText = "7,36,491,5802.";
+const hintText = "8,14,275,9063.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [3, 9, 0, 2, 7];
+let code = [8, 4, 2, 3, 6];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -661,6 +661,7 @@ let code = [3, 9, 0, 2, 7];
   </script>
 </body>
 </html>
+
 
 
 
