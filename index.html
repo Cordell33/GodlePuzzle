@@ -342,25 +342,25 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"How many bits are in a byte?",
-  "√196 = ? ",
-  "550 ÷ 2 = ? ",
-  "10,000 − 937 = ? ",
+"(7 ÷ 49)^(-1) = ?",
+  "6 × 6 = ?",
+  "1664 / 8 = ?",
+  "Year World War II ended",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [8],          // Q1 -> 8
-  [1, 4],       // Q2 -> 14
-  [2, 7, 5],    // Q3 -> 275
-  [9, 0, 6, 3], // Q4 -> 9063  
-  [8, 4, 2, 3, 6] 
+  [7],          // Q1 -> 7
+  [3, 6],       // Q2 -> 36
+  [2, 0, 8],    // Q3 -> 208
+  [1, 9, 4, 5], // Q4 -> 1945  
+  [7, 3, 0, 5, 9] 
 ];
 
-const hintText = "8,14,275,9063.";
+const hintText = "7,36,208,1945.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [8, 4, 2, 3, 6];
-
+let code = [7, 3, 0, 5, 9];
+    
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
     const questionsDiv = document.getElementById("questions");
@@ -661,6 +661,7 @@ let code = [8, 4, 2, 3, 6];
   </script>
 </body>
 </html>
+
 
 
 
