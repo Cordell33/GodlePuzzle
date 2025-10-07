@@ -1,2 +1,2 @@
-# Godle2
+# Godle
 A daily fun math puzzle game. 
