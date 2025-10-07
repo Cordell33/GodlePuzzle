@@ -342,24 +342,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"How many deadly sins are there ?",
-  "1 + 2 + 4 + 7 + 14 = ?",
-  "Tesla was obsessed with these 3 numbers ?",
-  "11 * 95 = ?",
+ "How many faces does a cube have?",
+  "9 × 2 = ?",
+  "500 − 93 = ? ",
+  "8,000 + 1,235 = ? ",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [7],          // Q1 -> 
-  [2, 8],       // Q2 -> 
-  [3, 6, 9],    // Q3 -> 
-  [1, 0, 4, 5], // Q4 ->   
-  [2, 6, 0, 5, 9] 
+  [6],          // Q1 -> 6
+  [1, 8],       // Q2 -> 18
+  [4, 0, 7],    // Q3 -> 407
+  [9, 2, 3, 5], // Q4 -> 9235 (4th digit = 5)
+  [6, 7, 3, 5, 8] 
 ];
 
-const hintText = "7,28,369,1045.";
+const hintText = "6,18,407,9235.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [2, 6, 0, 5, 9];
+let code = [6, 7, 3, 5, 8];
     
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -661,6 +661,7 @@ let code = [2, 6, 0, 5, 9];
   </script>
 </body>
 </html>
+
 
 
 
