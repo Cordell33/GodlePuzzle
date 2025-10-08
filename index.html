@@ -5,16 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gödle</title>
   <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: #121212; 
-      color: #eee; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 2rem;
       margin: 0;
       min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+      color-scheme: dark;
+    }
+    body.light-mode {
+      background: #f6f7f9;
+      color: #1b1b1b;
+      color-scheme: light;
     }
     h1 { 
       font-size: 2.8rem; 
@@ -38,6 +45,7 @@
       padding: 1.5rem 2rem;
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
       margin: 0 0 1.5rem;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
     }
     .rules-card h2 {
       margin-top: 0;
@@ -51,6 +59,7 @@
       margin-bottom: 0.75rem;
       color: #ddd;
       line-height: 1.5;
+      transition: color 0.3s ease;
     }
     .rules-card ul {
       margin: 0;
@@ -60,6 +69,7 @@
       flex-direction: column;
       gap: 0.4rem;
       font-size: 1.05rem;
+      transition: color 0.3s ease;
     }
     .rules-card ul b {
       color: #fff;
@@ -76,29 +86,31 @@
       align-items: center; 
       gap: 0.5rem; 
     }
-    .question-text { 
-      background-color: #333; 
-      border-left: 4px solid #00bcd4; 
-      padding: 0.8rem; 
-      font-weight: bold; 
-      border-radius: 4px; 
+    .question-text {
+      background-color: #333;
+      border-left: 4px solid #00bcd4;
+      padding: 0.8rem;
+      font-weight: bold;
+      border-radius: 4px;
       flex-grow: 1;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
     }
     .question-result { 
       font-size: 1.8rem; 
       min-width: 40px;
       text-align: center;
     }
-    .hint-text { 
-      background-color: #333; 
-      border-left: 4px solid #ff9800; 
-      padding: 0.8rem; 
-      font-style: italic; 
-      border-radius: 4px; 
-      margin-top: 1rem; 
+    .hint-text {
+      background-color: #333;
+      border-left: 4px solid #ff9800;
+      padding: 0.8rem;
+      font-style: italic;
+      border-radius: 4px;
+      margin-top: 1rem;
       display: none;
       animation: fadeIn 0.5s ease-in;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     .guesses { 
       display: flex; 
@@ -181,15 +193,16 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
-    #game-over { 
-      margin-top: 1.5rem; 
-      font-size: 1.5rem; 
+    #game-over {
+      margin-top: 1.5rem;
+      font-size: 1.5rem;
       text-align: center;
       padding: 1rem;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.1);
       animation: fadeIn 0.5s ease-in;
       display: none; /* hidden until end */
+      transition: background 0.3s ease, color 0.3s ease;
     }
     #menu-toggle {
       position: fixed;
@@ -237,7 +250,7 @@
       background: #1b1b1b;
       box-shadow: 8px 0 24px rgba(0, 0, 0, 0.45);
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
       z-index: 1050;
       padding: 1.5rem 1.75rem 2rem;
       display: flex;
@@ -258,6 +271,7 @@
       margin: 0;
       color: #ddd;
       line-height: 1.4;
+      transition: color 0.3s ease;
     }
     .login-panel {
       margin-top: 1.5rem;
@@ -267,6 +281,7 @@
       max-width: 420px;
       width: 100%;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
     }
     .login-panel label {
       display: block;
@@ -285,6 +300,7 @@
       background: #1e1e1e;
       color: #fff;
       font-size: 1rem;
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     .login-panel input[type="text"]:focus {
       outline: none;
@@ -328,6 +344,7 @@
       margin-top: 0.75rem;
       font-size: 0.9rem;
       color: #ccc;
+      transition: color 0.3s ease;
     }
     #timer {
       margin-top: 1rem;
@@ -379,15 +396,16 @@
       text-align: center;
       animation: fadeIn 0.5s ease-in;
     }
-    footer { 
-      margin-top: 3rem; 
-      font-size: 0.9rem; 
-      color: #777; 
-      text-align: center; 
+    footer {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
       padding: 1.5rem;
       border-top: 1px solid #333;
       width: 100%;
       max-width: 600px;
+      transition: color 0.3s ease, border-color 0.3s ease;
     }
     footer a {
       color: #00bcd4;
@@ -397,6 +415,150 @@
     footer a:hover {
       color: #ff9800;
       text-decoration: underline;
+    }
+
+    .theme-toggle {
+      margin-top: auto;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .toggle-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-weight: 600;
+      color: #ddd;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    .toggle-control input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .toggle-control .switch {
+      width: 48px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.3);
+      position: relative;
+      transition: background 0.3s ease;
+      flex-shrink: 0;
+    }
+    .toggle-control .switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: transform 0.3s ease;
+    }
+    .toggle-control input:checked + .switch {
+      background: #00bcd4;
+    }
+    .toggle-control input:checked + .switch::after {
+      transform: translateX(22px);
+    }
+    .toggle-control input:focus-visible + .switch {
+      box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.45);
+    }
+
+    body.light-mode .rules-card {
+      background: rgba(0, 0, 0, 0.05);
+      box-shadow: 0 10px 24px rgba(31, 64, 79, 0.15);
+    }
+    body.light-mode .rules-card p {
+      color: #2d2d2d;
+    }
+    body.light-mode .rules-card ul {
+      color: #3b3b3b;
+    }
+    body.light-mode .rules-card ul b {
+      color: #000;
+    }
+    body.light-mode .question-text {
+      background-color: #eef3f7;
+      color: #1b1b1b;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+    body.light-mode .hint-text {
+      background-color: #fff3e0;
+      color: #5c3b00;
+    }
+    body.light-mode .cell {
+      background: #ffffff;
+      color: #111;
+      border-color: #c3c8d0;
+    }
+    body.light-mode .cell.gray {
+      background: #cfd8dc;
+      border-color: #b0bec5;
+    }
+    body.light-mode .cell:focus {
+      border-color: #00a0b7;
+      box-shadow: 0 0 10px rgba(0, 160, 183, 0.4);
+    }
+    body.light-mode #side-menu {
+      background: #fdfdfd;
+      box-shadow: 8px 0 24px rgba(0, 0, 0, 0.1);
+      color: #1f1f1f;
+    }
+    body.light-mode #side-menu p {
+      color: #444;
+    }
+    body.light-mode .login-panel {
+      background: rgba(0, 0, 0, 0.05);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+    body.light-mode .login-panel input[type="text"] {
+      background: #fff;
+      color: #111;
+      border-color: #b8bec6;
+    }
+    body.light-mode .login-panel input[type="text"]::placeholder {
+      color: #757575;
+    }
+    body.light-mode .login-panel input[type="text"]:focus {
+      box-shadow: 0 0 0 3px rgba(0, 160, 183, 0.25);
+    }
+    body.light-mode .login-hint {
+      color: #555;
+    }
+    body.light-mode #game-over {
+      background: rgba(0, 0, 0, 0.06);
+      color: #1b1b1b;
+    }
+    body.light-mode footer {
+      color: #555;
+      border-top: 1px solid #d4d4d4;
+    }
+    body.light-mode .share-button.copy {
+      background: #f0f2f5;
+      color: #1e1e1e;
+    }
+    body.light-mode .share-button.copy:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+    }
+    body.light-mode .theme-toggle {
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+    }
+    body.light-mode .toggle-control {
+      color: #2c2c2c;
+    }
+    body.light-mode .toggle-control .switch {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    body.light-mode .toggle-control input:checked + .switch {
+      background: #0097a7;
+    }
+    body.light-mode .toggle-control .switch::after {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     @media (max-width: 600px) {
       body { padding: 1rem; }
@@ -451,6 +613,13 @@
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <a class="external-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
+    </div>
+    <div class="theme-toggle">
+      <label class="toggle-control" for="theme-toggle">
+        <span>Light background</span>
+        <input type="checkbox" id="theme-toggle" />
+        <span class="switch" aria-hidden="true"></span>
+      </label>
     </div>
   </aside>
 
@@ -539,6 +708,7 @@ let code = [9, 2, 7, 1, 6];
     const usernameInput = document.getElementById("username-input");
     const loginButton = document.getElementById("login-button");
     const logoutButton = document.getElementById("logout-button");
+    const themeToggle = document.getElementById("theme-toggle");
 
     let startTime;
     let timerInterval;
@@ -584,6 +754,42 @@ let code = [9, 2, 7, 1, 6];
         closeMenu();
       }
     });
+
+    const themeStorageKey = "godle_theme";
+    function applyThemePreference(mode) {
+      const useLight = mode === "light";
+      document.body.classList.toggle("light-mode", useLight);
+      if (themeToggle) {
+        themeToggle.checked = useLight;
+      }
+    }
+
+    const storedThemePreference = localStorage.getItem(themeStorageKey);
+    const colorSchemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+    const prefersLight = !!colorSchemeQuery && colorSchemeQuery.matches;
+    const initialTheme = storedThemePreference === "light" || storedThemePreference === "dark"
+      ? storedThemePreference
+      : (prefersLight ? "light" : "dark");
+    applyThemePreference(initialTheme);
+
+    if (!storedThemePreference && colorSchemeQuery) {
+      const handleSchemeChange = (event) => {
+        applyThemePreference(event.matches ? "light" : "dark");
+      };
+      if (typeof colorSchemeQuery.addEventListener === "function") {
+        colorSchemeQuery.addEventListener("change", handleSchemeChange);
+      } else if (typeof colorSchemeQuery.addListener === "function") {
+        colorSchemeQuery.addListener(handleSchemeChange);
+      }
+    }
+
+    if (themeToggle) {
+      themeToggle.addEventListener("change", () => {
+        const nextTheme = themeToggle.checked ? "light" : "dark";
+        applyThemePreference(nextTheme);
+        localStorage.setItem(themeStorageKey, nextTheme);
+      });
+    }
 
     setMenuOpen(false);
 
