@@ -434,9 +434,9 @@
   </style>
 </head>
 <body>
-  <button id="menu-toggle" type="button" aria-expanded="true" aria-controls="side-menu" aria-label="Toggle game menu">✕ Close</button>
+  <button id="menu-toggle" type="button" aria-expanded="false" aria-controls="side-menu" aria-label="Open game menu">☰ Menu</button>
   <div id="menu-backdrop" role="presentation"></div>
-  <aside id="side-menu" aria-hidden="false" tabindex="-1">
+  <aside id="side-menu" aria-hidden="true" tabindex="-1">
     <h2>Game Menu</h2>
     <p>Sign in to track your streak, then use the Start Game button below the board whenever you're ready to play.</p>
     <div class="login-panel" aria-live="polite">
@@ -584,7 +584,7 @@ let code = [9, 2, 7, 1, 6];
       }
     });
 
-    setMenuOpen(true);
+    setMenuOpen(false);
 
     // ===== DAILY STREAK (LocalStorage only) =====
     function userStreakKey(name) {
