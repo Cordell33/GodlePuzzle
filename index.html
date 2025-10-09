@@ -342,24 +342,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"How many Olympic rings are there?",
-  "7 × 13 = ? (write both digits)",
-  "2448 / 8  = ? (write all digits)",
-  "9,000 − 276 = ? (write all digits)",
+"What’s Carbon’s atomic number?",
+  "9 × 2 = ?",
+  "700 ÷ 2 = ? (write all digits)",
+  "10,000 − 753 = ? (write all digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [5],          // Q1 -> 5
-  [9, 1],       // Q2 -> 91
-  [3, 0, 6],    // Q3 -> 306
-  [8, 7, 2, 4], // Q4 -> 8724 (4th digit = 4)
-  [5, 1, 6, 0, 4] // Final code: uses Q1(5), Q2(9), Q3(0), Q4(4,8). Q4's 4th digit=4 is 4th here.
+  [6],          // Q1 -> 6
+  [1, 8],       // Q2 -> 18
+  [3, 5, 0],    // Q3 -> 350
+  [9, 2, 4, 7], // Q4 -> 9247 
+  [1, 4, 0, 7, 8] // 
 ];
 
-const hintText = "5,91,306,8724.";
+const hintText = "6,18,350,9247.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [5, 1, 6, 0, 4];
+let code = [6, 1, 0, 7, 9];
     
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -661,6 +661,7 @@ let code = [5, 1, 6, 0, 4];
   </script>
 </body>
 </html>
+
 
 
 
