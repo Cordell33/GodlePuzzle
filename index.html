@@ -679,24 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"A couple often refers to this many?",
-  "Atomic number of tungsten (symbol W) = ?",
-  "21 × 8 = ? (write all digits)",
-  "9,000 + 60 - 7 = ? (write all digits)",
+ "The first natural number, that’s not a factor of 60",
+  "How many days are in October?",
+  "27 × 24 = ? (write all digits)",
+  "10,000 − 948 = ? (write all digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [2],          // Q1 -> 2
-  [7, 4],       // Q2 -> 74
-  [1, 6, 8],    // Q3 -> 168
-  [9, 0, 5, 3], // Q4 -> 9053 (4th digit = 3)
-  [7, 4, 6, 3, 5] // Final code: uses Q1(2), Q2(4), Q3(8), Q4(3,9)
+  [7],          // Q1 -> 7
+  [3, 1],       // Q2 -> 31
+  [6, 4, 8],    // Q3 -> 648
+  [9, 0, 5, 2], // Q4 -> 9052 (4th digit = 2)
+  [6, 5, 8, 2, 4] // Final code uses Q1(7), Q2(1), Q3(6), Q4(2,9); '2' is 4th
 ];
 
-const hintText = "2,74,168,9053.";
+const hintText = "7,31,648,9052.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [7, 4, 6, 3, 5];
+let code = [6, 5, 8, 2, 4];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1146,6 +1146,7 @@ let code = [7, 4, 6, 3, 5];
   </script>
 </body>
 </html>
+
 
 
 
