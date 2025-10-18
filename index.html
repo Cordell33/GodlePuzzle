@@ -679,24 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
- "The first natural number, that’s not a factor of 60",
-  "How many days are in October?",
-  "27 × 24 = ? (write all digits)",
-  "10,000 − 948 = ? (write all digits)",
+"Which dollar Bill is Licolon on? ",
+  "19 * 6 = ? ",
+  "Half a circle in degrees?",
+  "2 *1000 + 50*6 -50 + 3 ",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [7],          // Q1 -> 7
-  [3, 1],       // Q2 -> 31
-  [6, 4, 8],    // Q3 -> 648
-  [9, 0, 5, 2], // Q4 -> 9052 (4th digit = 2)
-  [6, 5, 8, 2, 4] // Final code uses Q1(7), Q2(1), Q3(6), Q4(2,9); '2' is 4th
+  [5],          // Q1 -> 7
+  [9, 6],       // Q2 -> 31
+  [1, 8, 0],    // Q3 -> 648
+  [2, 3, 4, 7], // Q4 -> 9052 (4th digit = 2)
+  [5, 3, 0, 9, 7] // Final code uses Q1(7), Q2(1), Q3(6), Q4(2,9); '2' is 4th
 ];
 
-const hintText = "7,31,648,9052.";
+const hintText = "5,96,180,2347.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [6, 5, 8, 2, 4];
+let code = [5, 3, 0, 9, 7];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1146,6 +1146,7 @@ let code = [6, 5, 8, 2, 4];
   </script>
 </body>
 </html>
+
 
 
 
