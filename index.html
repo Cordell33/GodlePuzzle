@@ -679,24 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"How many moons does Earth have?",
-  "How many theses did Martin Luther famously post in 1517?",
-  "924 / 3  = ? (write all digits)",
-  "9,000 − 1,376 = ? (write all digits)",
+"The Big Dipper has this many stars",
+  "√256 = ? (write both digits)",
+  "HTTP status code for 'Forbidden' (write all digits)",
+  "10,000 − 715 = ? (write all digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [1],          // Q1 -> 1
-  [9, 5],       // Q2 -> 95
-  [3, 0, 8],    // Q3 -> 308
-  [7, 6, 2, 4], // Q4 -> 7624 (4th digit = 4)
-  [5, 0, 8, 4, 3] // Final code: uses Q1(1), Q2(9), Q3(0), Q4(4,6); '4' is 4th
+  [7],          // Q1 -> 7
+  [1, 6],       // Q2 -> 16
+  [4, 0, 3],    // Q3 -> 403
+  [9, 2, 8, 5], // Q4 -> 9285 (4th digit = 5)
+  [4, 9, 0, 8, 1] // Final code uses Q1(7), Q2(1), Q3(0), Q4(5,9); '5' is 4th
 ];
 
-const hintText = "1,95,308,7624.";
+const hintText = "7,16,403,9285.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [5, 0, 8, 4, 3];
+let code = [4, 9, 0, 8, 1];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1146,6 +1146,7 @@ let code = [5, 0, 8, 4, 3];
   </script>
 </body>
 </html>
+
 
 
 
