@@ -679,24 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"The Big Dipper has this many stars",
-  "√256 = ? (write both digits)",
-  "HTTP status code for 'Forbidden' (write all digits)",
-  "10,000 − 715 = ? (write all digits)",
+"3^2 = ?",
+  "4^2 = ?",
+  "81 × 5 = ? (write all digits)",
+  "3,000 − 217 = ? (write all digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [7],          // Q1 -> 7
+  [9],          // Q1 -> 9
   [1, 6],       // Q2 -> 16
-  [4, 0, 3],    // Q3 -> 403
-  [9, 2, 8, 5], // Q4 -> 9285 (4th digit = 5)
-  [4, 9, 3, 5, 0] // Final code uses Q1(7), Q2(1), Q3(0), Q4(5,9); '5' is 4th
+  [4, 0, 5],    // Q3 -> 405
+  [2, 7, 8, 3], // Q4 -> 2783 (4th digit = 3)
+  [1, 0, 6, 3, 8] // Final code uses Q1(9), Q2(1), Q3(4), Q4(3,8) — '3' is 4th
 ];
 
-const hintText = "7,16,403,9285.";
+const hintText = "9,16,405,2783.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [4, 9, 3, 5, 0];
+let code = [1, 0, 6, 3, 8];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1146,6 +1146,7 @@ let code = [4, 9, 3, 5, 0];
   </script>
 </body>
 </html>
+
 
 
 
