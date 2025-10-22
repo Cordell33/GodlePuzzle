@@ -679,24 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"3^2 = ?",
-  "4^2 = ?",
-  "81 × 5 = ? (write all digits)",
-  "3,000 − 217 = ? (write all digits)",
+"What is sin^2(x) + cos^2(x)?  ",
+  "What is arcsin of 1 in degrees?",
+  "What is 19/24 of a revolution in degrees.",
+  "What is 80,828/22 = ? (write all digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
-  [9],          // Q1 -> 9
-  [1, 6],       // Q2 -> 16
-  [4, 0, 5],    // Q3 -> 405
-  [2, 7, 8, 3], // Q4 -> 2783 (4th digit = 3)
-  [1, 0, 6, 3, 8] // Final code uses Q1(9), Q2(1), Q3(4), Q4(3,8) — '3' is 4th
+  [1],          // Q1 -> 9
+  [9, 0],       // Q2 -> 16
+  [2, 8, 5],    // Q3 -> 405
+  [3, 6, 7, 4], // Q4 -> 2783 (4th digit = 3)
+  [2, 0, 7, 3, 4] 
 ];
 
-const hintText = "9,16,405,2783.";
+const hintText = "1,90,285,3674.";
 const pyramid = [1, 2, 3, 4, 5];
-let code = [1, 0, 6, 3, 8];
+let code = [2, 0, 7, 3, 4];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1146,6 +1146,7 @@ let code = [1, 0, 6, 3, 8];
   </script>
 </body>
 </html>
+
 
 
 
