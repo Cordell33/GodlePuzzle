@@ -970,6 +970,20 @@ let code = [2, 0, 7, 3, 4];
           if (e.key === "Enter") submitBtn.click();
           if ((e.key === "Backspace" || e.key === "Delete") && e.target.value === "" && i > 0) {
             rowDiv.children[i - 1].focus();
+            return;
+          }
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            if (i > 0) {
+              rowDiv.children[i - 1].focus();
+            }
+            return;
+          }
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            if (i < rowDiv.children.length - 1) {
+              rowDiv.children[i + 1].focus();
+            }
           }
         });
         rowDiv.appendChild(input);
