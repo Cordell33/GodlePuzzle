@@ -679,25 +679,24 @@
     // ====== PUZZLE CONTENT ======
 
    const questions = [
-"Statistically the most likely number to roll on 2 dice?",
-  "√361 = ? ",
-  "1060 ÷ 2 =  ? ",
-  "10,000 − 7,154 = ? ",
+"Blackbeard and other pirates were known to have sealed this many seas?",
+  "2^4 = 4^2 = ? ",
+  "81 × 5 = ? ",
+  "10,000 − 717 = ? (four digits)",
   "Enter the final 5-digit code"
 ];
 
 const correctAnswers = [
   [7],          // Q1
-  [1, 9],       // Q2
-  [5, 3, 0],    // Q3
-  [2, 8, 4, 6], // Q4 
-  [0, 3, 4, 6, 7] 
+  [1, 6],       // Q2
+  [4, 0, 5],    // Q3
+  [9, 2, 8, 3], // Q4 (4th digit = 3)
+  [6, 2, 5, 3, 1] // final (uses Q1, Q2, Q3, Q4; '3' is 4th)
 ];
 
-const hintText = "7,19,530,2846.";
+const hintText = "7,16,405,9283.";
 const pyramid = [1,2,3,4,5];
-let code = [0,3,4,6,7];
-
+let code = [6,2,5,3,1];
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1161,6 +1160,7 @@ let code = [0,3,4,6,7];
   </script>
 </body>
 </html>
+
 
 
 
