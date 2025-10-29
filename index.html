@@ -678,25 +678,136 @@
   <script>
     // ====== PUZZLE CONTENT ======
 
-   const questions = [
-"How many main hemispheres are on earth? 🌍 ",
-  "73 is a twin prime with this number? 👯‍♀️ ", 
-  "52 and 65 LCM (least common multiple)? 🧮",
-  "What is $28.99 + $24.99 = ? ($__.__)💵",
-  "Enter the final 5-digit code"
-];
+   const puzzleReleaseDate = "2024-05-09"; // Eastern Time (America/New_York)
+   const puzzleSets = {
+     beforeMidnight: {
+       questions: [
+        "How many main hemispheres are on earth? 🌍 ",
+        "73 is a twin prime with this number? 👯‍♀️ ",
+        "52 and 65 LCM (least common multiple)? 🧮",
+        "What is $28.99 + $24.99 = ? ($__.__)💵",
+        "Enter the final 5-digit code"
+       ],
+       correctAnswers: [
+        [4],
+        [7, 1],
+        [2, 6, 0],
+        [5, 3, 9, 8],
+        [2, 6, 0, 8, 7]
+       ],
+       hintText: "8, 75, 369, 1024.",
+       code: [2, 6, 0, 8, 7]
+     },
+     afterMidnight: {
+       questions: [
+        "How many seasons are in a year?",
+        "0, 12, 24, __, 48, 60 .. ",
+        "17^2 * 2",
+        "Yesterdays’s date (MM/DD)?",
+        "Enter the final 5-digit code"
+       ],
+       correctAnswers: [
+        [4],
+        [3, 6],
+        [5, 7, 8],
+        [1, 0, 2, 9],
+        [5, 3, 8, 9, 0]
+       ],
+       hintText: "4, 36, 578, 1029.",
+       code: [5, 3, 8, 9, 0]
+     }
+   };
 
-const correctAnswers = [
-  [4],
-  [7, 1],
-  [2, 6, 0],
-  [5, 3, 9, 8],
-  [2, 6, 0, 8, 7]
-];
+   const pyramid = [1, 2, 3, 4, 5];
+   let questions = [];
+   let correctAnswers = [];
+   let hintText = "";
+   let code = [];
 
-const hintText = "8, 75, 369, 1024.";
-const pyramid = [1, 2, 3, 4, 5];
-let code = [2, 6, 0, 8, 7];
+   function applyPuzzleData(puzzle) {
+     questions = puzzle.questions;
+     correctAnswers = puzzle.correctAnswers;
+     hintText = puzzle.hintText;
+     code = [...puzzle.code];
+   }
+
+   function getEasternDateParts(date = new Date()) {
+     const formatter = new Intl.DateTimeFormat("en-US", {
+       timeZone: "America/New_York",
+       year: "numeric",
+       month: "2-digit",
+       day: "2-digit",
+       hour: "2-digit",
+       minute: "2-digit",
+       second: "2-digit",
+       hour12: false
+     });
+     const parts = formatter.formatToParts(date);
+     const result = {};
+     parts.forEach(({ type, value }) => {
+       if (type !== "literal") {
+         result[type] = value;
+       }
+     });
+     return result;
+   }
+
+   function getEasternDateString(date = new Date()) {
+     const { year, month, day } = getEasternDateParts(date);
+     return `${year}-${month}-${day}`;
+   }
+
+   function getMillisecondsUntilNextEasternMidnight() {
+     const now = new Date();
+     const parts = getEasternDateParts(now);
+     const estNowUtc = Date.UTC(
+       Number(parts.year),
+       Number(parts.month) - 1,
+       Number(parts.day),
+       Number(parts.hour),
+       Number(parts.minute),
+       Number(parts.second)
+     );
+     const estMidnightUtc = Date.UTC(
+       Number(parts.year),
+       Number(parts.month) - 1,
+       Number(parts.day),
+       0,
+       0,
+       0
+     ) + 24 * 60 * 60 * 1000;
+     const offset = now.getTime() - estNowUtc;
+     const nextMidnight = estMidnightUtc + offset;
+     return nextMidnight - now.getTime();
+   }
+
+   function getActivePuzzle() {
+     const currentEasternDate = getEasternDateString();
+     const released = currentEasternDate >= puzzleReleaseDate;
+     return {
+       data: released ? puzzleSets.afterMidnight : puzzleSets.beforeMidnight,
+       released
+     };
+   }
+
+   function scheduleMidnightTransition() {
+     const msUntilMidnight = getMillisecondsUntilNextEasternMidnight();
+     if (msUntilMidnight <= 0) {
+       return;
+     }
+     setTimeout(() => {
+       applyPuzzleData(puzzleSets.afterMidnight);
+       const wasActive = gameActive;
+       initGame();
+       if (wasActive) {
+         gameActive = false;
+         submitBtn.textContent = "Start Game";
+       }
+     }, msUntilMidnight);
+   }
+
+   const { data: initialPuzzle, released: puzzleAlreadyReleased } = getActivePuzzle();
+   applyPuzzleData(initialPuzzle);
 
 
     // ====== GAME STATE & DOM ======
@@ -734,6 +845,9 @@ let code = [2, 6, 0, 8, 7];
     let currentUser = storedUser ? storedUser : defaultUser;
 
     submitBtn.textContent = "Start Game";
+    if (!puzzleAlreadyReleased) {
+      scheduleMidnightTransition();
+    }
 
     function setMenuOpen(open) {
       document.body.classList.toggle("menu-open", open);
