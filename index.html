@@ -678,9 +678,9 @@
   <script>
     // ====== PUZZLE CONTENT ======
 
-   const puzzleReleaseDate = "2024-05-09"; // Eastern Time (America/New_York)
-   const puzzleSets = {
-     beforeMidnight: {
+   const puzzleSchedule = [
+     {
+       releaseDate: "2024-05-09",
        questions: [
         "How many main hemispheres are on earth? 🌍 ",
         "73 is a twin prime with this number? 👯‍♀️ ",
@@ -698,7 +698,8 @@
        hintText: "8, 75, 369, 1024.",
        code: [2, 6, 0, 8, 7]
      },
-     afterMidnight: {
+     {
+       releaseDate: "2025-10-30",
        questions: [
         "How many seasons are in a year?",
         "0, 12, 24, __, 48, 60 .. ",
@@ -716,13 +717,16 @@
        hintText: "4, 36, 578, 1029.",
        code: [5, 3, 8, 9, 0]
      }
-   };
+   ].sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 
    const pyramid = [1, 2, 3, 4, 5];
    let questions = [];
    let correctAnswers = [];
    let hintText = "";
    let code = [];
+   let activePuzzleReleaseDate = null;
+   let nextScheduledReleaseDate = null;
+   let releaseTimerId = null;
 
    function applyPuzzleData(puzzle) {
      questions = puzzle.questions;
@@ -757,57 +761,89 @@
      return `${year}-${month}-${day}`;
    }
 
-   function getMillisecondsUntilNextEasternMidnight() {
-     const now = new Date();
-     const parts = getEasternDateParts(now);
-     const estNowUtc = Date.UTC(
-       Number(parts.year),
-       Number(parts.month) - 1,
-       Number(parts.day),
-       Number(parts.hour),
-       Number(parts.minute),
-       Number(parts.second)
-     );
-     const estMidnightUtc = Date.UTC(
-       Number(parts.year),
-       Number(parts.month) - 1,
-       Number(parts.day),
-       0,
-       0,
-       0
-     ) + 24 * 60 * 60 * 1000;
-     const offset = now.getTime() - estNowUtc;
-     const nextMidnight = estMidnightUtc + offset;
-     return nextMidnight - now.getTime();
+   function getEasternOffsetMinutes(date) {
+     const formatter = new Intl.DateTimeFormat("en-US", {
+       timeZone: "America/New_York",
+       hour: "2-digit",
+       minute: "2-digit",
+       hour12: false,
+       timeZoneName: "shortOffset"
+     });
+     const parts = formatter.formatToParts(date);
+     const tzName = parts.find((part) => part.type === "timeZoneName")?.value || "GMT-4";
+     const match = tzName.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+     if (!match) {
+       return -4 * 60;
+     }
+     const sign = match[1] === "-" ? -1 : 1;
+     const hours = Number(match[2]);
+     const minutes = match[3] ? Number(match[3]) : 0;
+     return sign * (hours * 60 + minutes);
    }
 
-   function getActivePuzzle() {
-     const currentEasternDate = getEasternDateString();
-     const released = currentEasternDate >= puzzleReleaseDate;
+   function getEasternMidnightUtcTimestamp(dateString) {
+     const [year, month, day] = dateString.split("-").map(Number);
+     const referenceDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+     const offsetMinutes = getEasternOffsetMinutes(referenceDate);
+     return Date.UTC(year, month - 1, day, 0, 0, 0) - offsetMinutes * 60 * 1000;
+   }
+
+   function getActivePuzzle(date = new Date()) {
+     const currentEasternDate = getEasternDateString(date);
+     let selectedPuzzle = puzzleSchedule[0];
+     for (const puzzle of puzzleSchedule) {
+       if (puzzle.releaseDate <= currentEasternDate) {
+         selectedPuzzle = puzzle;
+       } else {
+         break;
+       }
+     }
+     const upcomingPuzzle = puzzleSchedule.find((puzzle) => puzzle.releaseDate > currentEasternDate);
      return {
-       data: released ? puzzleSets.afterMidnight : puzzleSets.beforeMidnight,
-       released
+       puzzle: selectedPuzzle,
+       nextReleaseDate: upcomingPuzzle ? upcomingPuzzle.releaseDate : null
      };
    }
 
-   function scheduleMidnightTransition() {
-     const msUntilMidnight = getMillisecondsUntilNextEasternMidnight();
-     if (msUntilMidnight <= 0) {
+   const MAX_TIMEOUT_MS = 2147483647;
+
+   function scheduleNextReleaseCheck(nextReleaseDate) {
+     if (releaseTimerId) {
+       clearTimeout(releaseTimerId);
+       releaseTimerId = null;
+     }
+     if (!nextReleaseDate) {
        return;
      }
-     setTimeout(() => {
-       applyPuzzleData(puzzleSets.afterMidnight);
+     const targetUtc = getEasternMidnightUtcTimestamp(nextReleaseDate);
+     const delay = targetUtc - Date.now();
+     const safeDelay = delay > 0 ? Math.min(delay, MAX_TIMEOUT_MS) : 0;
+     releaseTimerId = setTimeout(() => {
+       releaseTimerId = null;
+       handlePuzzleRelease();
+     }, safeDelay);
+   }
+
+   function handlePuzzleRelease() {
+     const { puzzle, nextReleaseDate } = getActivePuzzle();
+     if (puzzle.releaseDate !== activePuzzleReleaseDate) {
+       applyPuzzleData(puzzle);
+       activePuzzleReleaseDate = puzzle.releaseDate;
        const wasActive = gameActive;
        initGame();
        if (wasActive) {
          gameActive = false;
          submitBtn.textContent = "Start Game";
        }
-     }, msUntilMidnight);
+     }
+     nextScheduledReleaseDate = nextReleaseDate;
+     scheduleNextReleaseCheck(nextScheduledReleaseDate);
    }
 
-   const { data: initialPuzzle, released: puzzleAlreadyReleased } = getActivePuzzle();
+   const { puzzle: initialPuzzle, nextReleaseDate: initialNextReleaseDate } = getActivePuzzle();
    applyPuzzleData(initialPuzzle);
+   activePuzzleReleaseDate = initialPuzzle.releaseDate;
+   nextScheduledReleaseDate = initialNextReleaseDate;
 
 
     // ====== GAME STATE & DOM ======
@@ -845,9 +881,7 @@
     let currentUser = storedUser ? storedUser : defaultUser;
 
     submitBtn.textContent = "Start Game";
-    if (!puzzleAlreadyReleased) {
-      scheduleMidnightTransition();
-    }
+    scheduleNextReleaseCheck(nextScheduledReleaseDate);
 
     function setMenuOpen(open) {
       document.body.classList.toggle("menu-open", open);
