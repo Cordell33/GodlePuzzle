@@ -383,6 +383,8 @@
     }
     .share-button.twitter { background: #1DA1F2; color: white; }
     .share-button.facebook { background: #4267B2; color: white; }
+    .share-button.reddit { background: #FF4500; color: white; }
+    .share-button.bluesky { background: #1185FE; color: white; }
     .share-button.copy { background: #333; color: white; }
     #copy-message { 
       margin-top: 1rem; 
@@ -668,6 +670,8 @@
     <div class="share-buttons">
       <button class="share-button twitter" onclick="shareTwitter()" aria-label="Share results to Twitter">X/Twitter</button>
       <button class="share-button facebook" onclick="shareFacebook()" aria-label="Share results to Facebook">Facebook</button>
+      <button class="share-button reddit" onclick="shareReddit()" aria-label="Share results to Reddit">Reddit</button>
+      <button class="share-button bluesky" onclick="shareBluesky()" aria-label="Share results to Bluesky">Bluesky</button>
       <button class="share-button copy" onclick="copyResults()" aria-label="Copy results to clipboard">Copy Link</button>
     </div>
     <div id="copy-message" aria-live="polite">Copied to clipboard!</div>
@@ -1329,6 +1333,19 @@
       const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
       const win = window.open(shareUrl, 'fb-share-dialog', 'width=626,height=436');
       if (!win) { copyResults(); alert('Facebook share popup was blocked. Your results were copied—paste into Facebook manually.'); }
+    }
+
+    function shareReddit() {
+      const titleSuffix = activePuzzleReleaseDate ? ` - ${activePuzzleReleaseDate}` : '';
+      const shareUrl = `https://www.reddit.com/r/logicgames/submit?selftext=true&title=${encodeURIComponent(`Gödle Results${titleSuffix}`)}&text=${encodeURIComponent(buildShareText())}`;
+      const win = window.open(shareUrl, '_blank', 'noopener,width=960,height=700');
+      if (!win) { copyResults(); alert('Reddit share popup was blocked. Your results were copied—share them in r/logicgames manually.'); }
+    }
+
+    function shareBluesky() {
+      const shareUrl = `https://bsky.app/intent/compose?text=${encodeURIComponent(buildShareText())}`;
+      const win = window.open(shareUrl, '_blank', 'noopener');
+      if (!win) { copyResults(); alert('Bluesky share popup was blocked. Your results were copied—post them on Bluesky manually.'); }
     }
 
     function buildShareText() {
