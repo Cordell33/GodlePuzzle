@@ -1313,9 +1313,9 @@
 
     function shareReddit() {
       const titleSuffix = activePuzzleReleaseDate ? ` - ${activePuzzleReleaseDate}` : '';
-      const shareUrl = `https://www.reddit.com/r/logicgames/submit?selftext=true&title=${encodeURIComponent(`Gödle Results${titleSuffix}`)}&text=${encodeURIComponent(buildShareText())}`;
+      const shareUrl = `https://www.reddit.com/r/godle/submit?selftext=true&title=${encodeURIComponent(`Gödle Results${titleSuffix}`)}&text=${encodeURIComponent(buildShareText())}`;
       const win = window.open(shareUrl, '_blank', 'noopener,width=960,height=700');
-      if (!win) { copyResults(); alert('Reddit share popup was blocked. Your results were copied—share them in r/logicgames manually.'); }
+      if (!win) { copyResults(); alert('Reddit share popup was blocked. Your results were copied—share them in r/godle manually.'); }
     }
 
     function shareBluesky() {
