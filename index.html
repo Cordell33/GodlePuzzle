@@ -711,144 +711,295 @@
   <script>
     // ====== PUZZLE CONTENT ======
 
-   
    const puzzleSchedule = [
-     {
-       releaseDate: "2025-12-19",
-       questions: [
-         "4 two times = ?",
-         "Solve x(x-7) = 0, x= least to greatest",
-         "100 + 43 = ?",
-         "5269 ÷ 1 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [8],
-         [0, 7],
-         [1, 4, 3],
-         [5, 2, 6, 9],
-         [1, 4, 8, 9, 3]
-       ],
-       hintText: "8, 07, 143, 5269.",
-       code: [1, 4, 8, 9, 3]
-     },
-     {
-       releaseDate: "2025-12-20",
-       questions: [
-         "3 × 3 = ?",
-         "21 + 21 = ?",
-         "190 + 190 + 190 + 190 = ?",
-         "85310 ÷ 10 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [9],
-         [4, 2],
-         [7, 6, 0],
-         [8, 5, 3, 1],
-         [2, 6, 0, 1, 7]
-       ],
-       hintText: "9, 42, 760, 8531.",
-       code: [2, 6, 0, 1, 7]
-     },
-     {
-       releaseDate: "2025-12-21",
-       questions: [
-         "21 ÷ 3 = ?",
-         "What is 10 + 4?",
-         "476 + 477 = ?",
-         "4130 + 4130 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [7],
-         [1, 4],
-         [9, 5, 3],
-         [8, 2, 6, 0],
-         [1, 9, 3, 0, 2]
-       ],
-       hintText: "7, 14, 953, 8260.",
-       code: [1, 9, 3, 0, 2]
-     },
-     {
-       releaseDate: "2025-12-22",
-       questions: [
-         "Corners on a trapezoid",
-         "Days in February on a leap year",
-         "1222 - 521 =  ?",
-         "4130 × 2 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [4],
-         [2, 9],
-         [7, 0, 1],
-         [8, 6, 5, 3],
-         [8, 0, 2, 3, 5]
-       ],
-       hintText: "4, 29, 701, 8653.",
-       code: [8, 0, 2, 3, 5]
-     },
-     {
-       releaseDate: "2025-12-23",
-       questions: [
-         "How many days til Christmas?",
-         "How many days til Jan 7th (Orthodox Christmas)?",
-         "123 × 3 = ?",
-         "3647 + 1223 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [2],
-         [1, 5],
-         [3, 6, 9],
-         [4, 8, 7, 0],
-         [3, 9, 7, 0, 5]
-       ],
-       hintText: "2, 15, 369, 4870.",
-       code: [3, 9, 7, 0, 5]
-     },
-     {
-       releaseDate: "2025-12-24",
-       questions: [
-         "How many reindeer does Santa have? (including Rudolph)",
-         "How many is a dozen cookies?",
-         "How many days til next Christmas Eve?",
-         "12249 ÷ 3 + 4 = ?",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [9],
-         [1, 2],
-         [3, 6, 5],
-         [4, 0, 8, 7],
-         [4, 2, 8, 7, 0]
-       ],
-       hintText: "9, 12, 365, 4087.",
-       code: [4, 2, 8, 7, 0]
-     },
-     {
-       releaseDate: "2025-12-25",
-       questions: [
-         "How many days til New Year’s day?",
-         "How many weeks in a year?",
-         "29 × 14 = ?",
-         ".. 1, 2, 3, 5, 8, __, 21, 34, 55, __, 144..",
-         "Enter the final 5-digit code"
-       ],
-       correctAnswers: [
-         [7],
-         [5, 2],
-         [4, 0, 6],
-         [1, 3, 8, 9],
-         [5, 2, 8, 3, 9]
-       ],
-       hintText: "7, 52, 406, 1389.",
-       code: [5, 2, 8, 3, 9]
-     }
-   ];
+    {
+      releaseDate: "2025-12-04",
+      questions: [
+       "Any nonzero number to the 0 power equals ? (e.g., 5^0 = ?)",
+       "4 twenties =  ?",
+       "1300 − 1031 = ?",
+       "3767 × 2 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [1],
+       [8, 0],
+       [2, 6, 9],
+       [7, 5, 3, 4],
+       [1, 6, 9, 4, 0]
+      ],
+      hintText: "1, 80, 269, 7534.",
+      code: [1, 6, 9, 4, 0]
+    },
+    {
+      releaseDate: "2025-12-05",
+      questions: [
+       "18 ÷ 3 = ?",
+       "7 × 12 = ?",
+       "If f(x) = 13(x) -1, find f(10)",
+       "1528 + 1529 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [6],
+       [8, 4],
+       [1, 2, 9],
+       [3, 0, 5, 7],
+       [2, 4, 9, 7, 8]
+      ],
+      hintText: "6, 84, 129, 3057.",
+      code: [2, 4, 9, 7, 8]
+    },
+    {
+      releaseDate: "2025-12-06",
+      questions: [
+       "365 days equals this many years?",
+       "37 × 2 = ?",
+       "Find (x,y,z) given z = 3, y = 3z -1, y = x +8 ",
+       "5912 ÷  2 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [1],
+       [7, 4],
+       [0, 8, 3],
+       [2, 9, 5, 6],
+       [1, 7, 3, 6, 4]
+      ],
+      hintText: "1, 74, 083, 2956.",
+      code: [1, 7, 3, 6, 4]
+    },
+    {
+      releaseDate: "2025-12-07",
+      questions: [
+       "10 ÷ 10 = ?",
+       "43 × 2 = ?",
+       "1000 - 695 = ?",
+       "4407 + 1207 + 3633 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [1],
+       [8, 6],
+       [3, 0, 5],
+       [9, 2, 4, 7],
+       [3, 6, 5, 4, 7]
+      ],
+      hintText: "1, 86, 305, 9247.",
+      code: [3, 6, 5, 4, 7]
+    },
+    {
+      releaseDate: "2025-12-08",
+      questions: [
+       "27 ÷ 9 = ?",
+       "7 x 10 = ?",
+       "97 + 97 = ?",
+       "6258 - 3124 + 3124 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [3],
+       [7, 0],
+       [1, 9, 4],
+       [6, 2, 5, 8],
+       [6, 0, 4, 5, 8]
+      ],
+      hintText: "3, 70, 194, 6258.",
+      code: [6, 0, 4, 5, 8]
+    },
+    {
+      releaseDate: "2025-12-09",
+      questions: [
+       "27 ÷ 3 = ?",
+       "7 x 9 = ?",
+       "250 + 250 + 250?",
+       " 0, __, 24, 36, __, 60 (in respective order)",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [9],
+       [6, 3],
+       [7, 5, 0],
+       [1, 2, 4, 8],
+       [9, 5, 4, 0, 8]
+      ],
+      hintText: "9, 63, 750, 1248.",
+      code: [9, 5, 4, 0, 8]
+    },
+    {
+      releaseDate: "2025-12-10",
+      questions: [
+       "How many sides does an isoslese triangle have?",
+       "If y = -3x + 7, find the y-intercept (x,y)",
+       "200 − 6 = ?",
+       "573 × 5 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [3],
+       [0, 7],
+       [1, 9, 4],
+       [2, 8, 6, 5],
+       [3, 0, 4, 5, 9]
+      ],
+      hintText: "3, 07, 194, 2865.",
+      code: [3, 0, 4, 5, 9]
+    },
+    {
+      releaseDate: "2025-12-11",
+      questions: [
+       "How many deadly sins are there?",
+       "If f(x)= 5x -2, find f(10)  ",
+       "To turn in a complete circle",
+       "259 x 5 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [7],
+       [4, 8],
+       [3, 6, 0],
+       [1, 2, 9, 5],
+       [9, 6, 0, 5, 3]
+      ],
+      hintText: "7, 48, 360, 1295.",
+      code: [9, 6, 0, 5, 3]
+    },
+    {
+      releaseDate: "2025-12-12",
+      questions: [
+       "1 x 2 x 1 x 2 = ",
+       "How many days til Christmas? ",
+       "104  quintupled?",
+       "13578 ÷ 2 = ?",
+       "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [4],
+       [1, 3],
+       [5, 2, 0],
+       [6, 7, 8, 9],
+       [1, 2, 0, 4, 9]
+      ],
+      hintText: "4, 13, 520, 6789.",
+      code: [1, 2, 0, 4, 9]
+    },
+    {
+      releaseDate: "2025-12-13",
+      questions: [
+       "1 × 1 = ?",
+       "60 + 10 = ?",
+       "424 + 100 = ?",
+       "4839 + 2000 = ?",
+       "Enter the final 5-digit code",
+      ],
+      correctAnswers: [
+       [1],
+       [7, 0],
+       [5, 2, 4],
+       [6, 8, 3, 9],
+       [7, 8, 4, 9, 1],
+      ],
+      hintText: "1, 70, 524, 6839.",
+      code: [7, 8, 4, 9, 1]
+    },
+    {
+      releaseDate: "2025-12-14",
+      questions: [
+       "This many blind mice in the popular nursery rhyme",
+       "There are this many sets of 3600 seconds in a day",
+       "79 + 79 = ?",
+       "If x = 0, z = 9 +x, y +w = 13, w -y =1; find (x,y,w,z) ?",
+       "Enter the final 5-digit code",
+      ],
+      correctAnswers: [
+       [3],
+       [2, 4],
+       [1, 5, 8],
+       [0, 6, 7, 9],
+       [0, 1, 7, 9, 5],
+      ],
+      hintText: "3, 24, 158, 0679.",
+      code: [0, 1, 7, 9, 5]
+    },
+    {
+      releaseDate: "2025-12-15",
+      questions: [
+        "How many sides does a quadrilateral have?",
+        "7 × 13 = ?",
+        "300 − 30 = ?",
+        "49 × 15 + 7000 -900= ?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+       [4],
+       [9, 1],
+       [2, 7, 0],
+       [6, 8, 3, 5],
+       [4, 9, 3, 5, 1]
+      ],
+      hintText: "4, 91, 268, 6835.",
+      code: [4, 9, 3, 5, 1]
+    },
+    {
+      releaseDate: "2025-12-16",
+      questions: [
+       "How many habitable continents are there",
+       "111 ÷ 3 = ? ",
+       "37 × 4 =  ?",
+       " 5,2,0, -1, -1, _, _, _, _, 14",
+       "Enter the final 5-digit code",
+      ],
+      correctAnswers: [
+       [6],
+       [3, 7],
+       [1, 4, 8],
+       [0, 2, 5, 9],
+       [0, 7, 3, 9, 8],
+      ],
+      hintText: "6, 37, 148, 0259.",
+      code: [0, 7, 3, 9, 8]
+    },
+    {
+      releaseDate: "2025-12-17",
+      questions: [
+       "4 quarters equals this many dollars?",
+       "1 dollar - 3 dimes + 3 pennies - 4 nickels in cents",
+       "32% off 1000",
+       "$73.37 with an 8% sales tax gives this total ($.__)?",
+       "Enter the final 5-digit code",
+      ],
+      correctAnswers: [
+       [1],
+       [5, 3],
+       [6, 8, 0],
+       [7, 9, 2, 4],
+       [1, 3, 0, 4, 8],
+      ],
+      hintText: "1, 53, 680, 7924.",
+      code: [1, 3, 0, 4, 8]
+    },
+    {
+      releaseDate: "2025-12-18",
+      questions: [
+       "0 -0 + 0 × 0 = ?",
+       "13 × 7 =",
+       "1920 ÷ 5 = ? ",
+       "7(1000)-5(100)+ 3(10)-3",
+       "Enter the final 5-digit code",
+      ],
+      correctAnswers: [
+       [0],
+       [9, 1],
+       [3, 8, 4],
+       [6, 5, 2, 7],
+       [3, 5, 0, 7, 4],
+      ],
+      hintText: "0, 91, 384, 6527.",
+      code: [3, 5, 0, 7, 4]
+    }
+   ].sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 
-
+   const pyramid = [1, 2, 3, 4, 5];
    let questions = [];
    let correctAnswers = [];
    let hintText = "";
@@ -1455,71 +1606,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
