@@ -1507,6 +1507,44 @@
       return `godle:difficulty:${keyDate}`;
     }
 
+    function getDifficultyRatingsKey() {
+      return `${getDifficultyStorageKey()}:ratings`;
+    }
+
+    function getDifficultyAverage(defaultRating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      if (!stored) {
+        return defaultRating;
+      }
+      try {
+        const ratings = JSON.parse(stored);
+        if (!Array.isArray(ratings) || ratings.length === 0) {
+          return defaultRating;
+        }
+        const total = ratings.reduce((sum, value) => sum + Number(value || 0), 0);
+        return total / ratings.length;
+      } catch {
+        return defaultRating;
+      }
+    }
+
+    function storeDifficultyRating(rating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      let ratings = [];
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            ratings = parsed;
+          }
+        } catch {
+          ratings = [];
+        }
+      }
+      ratings.push(rating);
+      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+    }
+
     function getBallColor(i) {
       switch (i) {
         case 1: return getComputedStyle(document.documentElement).getPropertyValue("--diff1").trim();
@@ -1532,11 +1570,13 @@
     }
 
     function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const saved = localStorage.getItem(getDifficultyStorageKey());
-      const start = saved ? parseFloat(saved) : defaultRating;
+      const hasAccount = currentUser && currentUser !== defaultUser;
+      const averageRating = getDifficultyAverage(defaultRating);
+      const start = averageRating;
       difficultySlider.value = String(clamp(start, 1, 5));
-      difficultySubmit.textContent = "Submit";
-      difficultySubmit.disabled = false;
+      difficultySlider.disabled = !hasAccount;
+      difficultySubmit.textContent = hasAccount ? "Submit" : "Log in to rate";
+      difficultySubmit.disabled = !hasAccount;
       difficultyMeter.classList.remove("hidden");
       renderDifficulty(parseFloat(difficultySlider.value));
     }
@@ -1683,7 +1723,7 @@
 
     difficultySubmit.addEventListener("click", async () => {
       const rating = parseFloat(difficultySlider.value);
-      localStorage.setItem(getDifficultyStorageKey(), String(rating));
+      storeDifficultyRating(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
