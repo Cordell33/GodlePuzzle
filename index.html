@@ -1576,7 +1576,7 @@
       difficultySlider.value = String(clamp(start, 1, 5));
       difficultySlider.disabled = !hasAccount;
       difficultySubmit.textContent = hasAccount ? "Submit" : "Log in to rate";
-      difficultySubmit.disabled = !hasAccount;
+      difficultySubmit.disabled = false;
       difficultyMeter.classList.remove("hidden");
       renderDifficulty(parseFloat(difficultySlider.value));
     }
@@ -1722,6 +1722,11 @@
     });
 
     difficultySubmit.addEventListener("click", async () => {
+      if (!currentUser || currentUser === defaultUser) {
+        setMenuOpen(true);
+        usernameInput.focus();
+        return;
+      }
       const rating = parseFloat(difficultySlider.value);
       storeDifficultyRating(rating);
       try {
