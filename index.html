@@ -1571,12 +1571,21 @@
 
     function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
       const hasAccount = currentUser && currentUser !== defaultUser;
+      const canRate = hasAccount && isCorrect;
       const averageRating = getDifficultyAverage(defaultRating);
       const start = averageRating;
       difficultySlider.value = String(clamp(start, 1, 5));
-      difficultySlider.disabled = !hasAccount;
-      difficultySubmit.textContent = hasAccount ? "Submit" : "Log in to rate";
-      difficultySubmit.disabled = false;
+      difficultySlider.disabled = !canRate;
+      if (canRate) {
+        difficultySubmit.textContent = "Submit";
+        difficultySubmit.disabled = false;
+      } else if (!hasAccount) {
+        difficultySubmit.textContent = "Log in to rate";
+        difficultySubmit.disabled = false;
+      } else {
+        difficultySubmit.textContent = "Solve to rate";
+        difficultySubmit.disabled = true;
+      }
       difficultyMeter.classList.remove("hidden");
       renderDifficulty(parseFloat(difficultySlider.value));
     }
@@ -1725,6 +1734,9 @@
       if (!currentUser || currentUser === defaultUser) {
         setMenuOpen(true);
         usernameInput.focus();
+        return;
+      }
+      if (!isCorrect) {
         return;
       }
       const rating = parseFloat(difficultySlider.value);
