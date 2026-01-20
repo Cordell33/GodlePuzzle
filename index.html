@@ -216,6 +216,69 @@
       display: none; /* hidden until end */
       transition: background 0.3s ease, color 0.3s ease;
     }
+    .difficulty.hidden { display: none; }
+    .difficulty{
+      width: min(520px, 92vw);
+      margin-top: 18px;
+      padding: 14px 14px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+    }
+    .difficulty-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .balls{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .ball{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.10) inset;
+    }
+    .difficulty-value{
+      font-weight: 700;
+      font-size: 16px;
+      white-space: nowrap;
+    }
+    .difficulty-controls{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #difficulty-slider{ width: 100%; }
+    #difficulty-submit{
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color: inherit;
+      cursor: pointer;
+    }
+    #difficulty-submit:hover{
+      background: rgba(255,255,255,0.16);
+    }
+    .difficulty-note{
+      margin: 8px 0 0;
+      opacity: 0.8;
+      font-size: 13px;
+    }
+    :root{
+      --diff1: #2f6bff;
+      --diff2: #22c55e;
+      --diff3: #facc15;
+      --diff4: #fb923c;
+      --diff5: #ef4444;
+    }
     #menu-toggle {
       position: fixed;
       top: 1rem;
@@ -566,6 +629,10 @@
       background: rgba(0, 0, 0, 0.06);
       color: #1b1b1b;
     }
+    body.light-mode .difficulty {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
     body.light-mode footer {
       color: #555;
       border-top: 1px solid #d4d4d4;
@@ -684,6 +751,37 @@
   <div id="hint" class="hint-text"></div>
   <div id="stars"></div>
   <div id="game-over" aria-live="polite"></div>
+  <!-- Difficulty Meter (hidden until game ends) -->
+  <section id="difficulty-meter" class="difficulty hidden" aria-label="Difficulty rating">
+    <div class="difficulty-row">
+      <div class="balls" aria-hidden="true">
+        <span class="ball" data-ball="1"></span>
+        <span class="ball" data-ball="2"></span>
+        <span class="ball" data-ball="3"></span>
+        <span class="ball" data-ball="4"></span>
+        <span class="ball" data-ball="5"></span>
+      </div>
+
+      <div class="difficulty-value">
+        <span id="difficulty-number">2.5</span><span class="out-of"> / 5</span>
+      </div>
+    </div>
+
+    <div class="difficulty-controls">
+      <input
+        id="difficulty-slider"
+        type="range"
+        min="1"
+        max="5"
+        step="0.1"
+        value="2.5"
+        aria-label="Difficulty slider (1 to 5)"
+      />
+      <button id="difficulty-submit" type="button">Submit</button>
+    </div>
+
+    <p class="difficulty-note">Rate how hard that puzzle felt (decimals welcome).</p>
+  </section>
 
   <div id="share-results">
     <h3>Share Your Results</h3>
@@ -929,6 +1027,7 @@
    let correctAnswers = [];
    let hintText = "";
    let code = [];
+   let difficultyRating = 2.5;
    let activePuzzleReleaseDate = null;
    let nextScheduledReleaseDate = null;
    let releaseTimerId = null;
@@ -938,6 +1037,7 @@
      correctAnswers = puzzle.correctAnswers;
      hintText = puzzle.hintText;
      code = [...puzzle.code];
+     difficultyRating = typeof puzzle.difficultyRating === "number" ? puzzle.difficultyRating : 2.5;
    }
 
    function getEasternDateParts(date = new Date()) {
@@ -1072,6 +1172,11 @@
     const loginButton = document.getElementById("login-button");
     const logoutButton = document.getElementById("logout-button");
     const themeToggle = document.getElementById("theme-toggle");
+    const difficultyMeter = document.getElementById("difficulty-meter");
+    const difficultySlider = document.getElementById("difficulty-slider");
+    const difficultyNumber = document.getElementById("difficulty-number");
+    const difficultySubmit = document.getElementById("difficulty-submit");
+    const difficultyBalls = Array.from(difficultyMeter.querySelectorAll(".ball"));
 
     let startTime;
     let timerInterval;
@@ -1256,6 +1361,7 @@
       gameOverDiv.innerHTML = '';
       gameOverDiv.style.display = 'none';
       starsDiv.innerHTML = '';
+      difficultyMeter.classList.add("hidden");
       shareResults.style.display = 'none';
       currentStep = 0;
       stars = 0;
@@ -1394,6 +1500,96 @@
 
     function showShareButtons() { shareResults.style.display = "block"; }
 
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+    function getDifficultyStorageKey() {
+      const keyDate = activePuzzleReleaseDate || getEasternDateString();
+      return `godle:difficulty:${keyDate}`;
+    }
+
+    function getDifficultyRatingsKey() {
+      return `${getDifficultyStorageKey()}:ratings`;
+    }
+
+    function getDifficultyAverage(defaultRating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      if (!stored) {
+        return defaultRating;
+      }
+      try {
+        const ratings = JSON.parse(stored);
+        if (!Array.isArray(ratings) || ratings.length === 0) {
+          return defaultRating;
+        }
+        const total = ratings.reduce((sum, value) => sum + Number(value || 0), 0);
+        return total / ratings.length;
+      } catch {
+        return defaultRating;
+      }
+    }
+
+    function storeDifficultyRating(rating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      let ratings = [];
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            ratings = parsed;
+          }
+        } catch {
+          ratings = [];
+        }
+      }
+      ratings.push(rating);
+      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+    }
+
+    function getBallColor(i) {
+      switch (i) {
+        case 1: return getComputedStyle(document.documentElement).getPropertyValue("--diff1").trim();
+        case 2: return getComputedStyle(document.documentElement).getPropertyValue("--diff2").trim();
+        case 3: return getComputedStyle(document.documentElement).getPropertyValue("--diff3").trim();
+        case 4: return getComputedStyle(document.documentElement).getPropertyValue("--diff4").trim();
+        case 5: return getComputedStyle(document.documentElement).getPropertyValue("--diff5").trim();
+        default: return "#999";
+      }
+    }
+
+    function renderDifficulty(rating) {
+      const clamped = clamp(rating, 1, 5);
+      difficultyNumber.textContent = clamped.toFixed(1);
+      difficultyBalls.forEach((ball, idx) => {
+        const i = idx + 1;
+        const fill = clamp(clamped - (i - 1), 0, 1);
+        ball.style.background = getBallColor(i);
+        const minOpacity = 0.18;
+        const opacity = minOpacity + (1 - minOpacity) * fill;
+        ball.style.opacity = String(opacity);
+      });
+    }
+
+    function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
+      const hasAccount = currentUser && currentUser !== defaultUser;
+      const canRate = hasAccount && isCorrect;
+      const averageRating = getDifficultyAverage(defaultRating);
+      const start = averageRating;
+      difficultySlider.value = String(clamp(start, 1, 5));
+      difficultySlider.disabled = !canRate;
+      if (canRate) {
+        difficultySubmit.textContent = "Submit";
+        difficultySubmit.disabled = false;
+      } else if (!hasAccount) {
+        difficultySubmit.textContent = "Log in to rate";
+        difficultySubmit.disabled = false;
+      } else {
+        difficultySubmit.textContent = "Solve to rate";
+        difficultySubmit.disabled = false;
+      }
+      difficultyMeter.classList.remove("hidden");
+      renderDifficulty(parseFloat(difficultySlider.value));
+    }
+
     function shareTwitter() {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(buildShareText())}`, '_blank', 'noopener');
     }
@@ -1503,6 +1699,7 @@
           stars = 0;
         }
 
+        showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
         submitBtn.textContent = "Start Game";
         submitBtn.disabled = false;
@@ -1528,6 +1725,33 @@
         e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
     });
+
+    difficultySlider.addEventListener("input", () => {
+      renderDifficulty(parseFloat(difficultySlider.value));
+    });
+
+    difficultySubmit.addEventListener("click", async () => {
+      if (!currentUser || currentUser === defaultUser) {
+        setMenuOpen(true);
+        usernameInput.focus();
+        return;
+      }
+      if (!isCorrect) {
+        window.location.reload();
+        return;
+      }
+      const rating = parseFloat(difficultySlider.value);
+      storeDifficultyRating(rating);
+      try {
+        await window.onSubmitDifficulty?.(rating);
+      } catch (e) {
+        console.warn("Difficulty submit failed:", e);
+      }
+      difficultySubmit.textContent = "Submitted ✓";
+      difficultySubmit.disabled = true;
+    });
+
+    renderDifficulty(parseFloat(difficultySlider.value));
   </script>
 </body>
 </html>
