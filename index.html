@@ -1584,7 +1584,7 @@
         difficultySubmit.disabled = false;
       } else {
         difficultySubmit.textContent = "Solve to rate";
-        difficultySubmit.disabled = true;
+        difficultySubmit.disabled = false;
       }
       difficultyMeter.classList.remove("hidden");
       renderDifficulty(parseFloat(difficultySlider.value));
@@ -1737,6 +1737,7 @@
         return;
       }
       if (!isCorrect) {
+        window.location.reload();
         return;
       }
       const rating = parseFloat(difficultySlider.value);
