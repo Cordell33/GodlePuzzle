@@ -1161,7 +1161,7 @@
        [8, 9, 1, 6, 4]
       ],
       difficultyRating: 2.2,
-      hintText: "4, 29, 701, 8653.",
+      hintText: "4, 29, 701, 8356.",
       code: [8, 9, 1, 6, 4]
     }
    ].sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
@@ -1893,6 +1893,7 @@
       }
       difficultySubmit.textContent = "Submitted ✓";
       difficultySubmit.disabled = true;
+      difficultySlider.disabled = true;
     });
 
     renderDifficulty(parseFloat(difficultySlider.value));
