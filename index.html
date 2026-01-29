@@ -200,6 +200,13 @@
       background: #ff9800;
       color: white;
     }
+    .retry-message {
+      margin: 0.4rem 0 0;
+      font-size: 0.95rem;
+      color: #ffcc80;
+      text-align: center;
+      display: none;
+    }
     #hint-button:hover {
       background: #f57c00;
       transform: translateY(-2px);
@@ -748,6 +755,7 @@
     <div class="guesses" id="guess-container"></div>
   </div>
   <button id="submit">Submit Guess</button>
+  <p id="retry-message" class="retry-message" aria-live="polite"></p>
   <button id="hint-button" style="display: none;">Hint</button>
   <div id="hint" class="hint-text"></div>
   <div id="stars"></div>
@@ -1473,6 +1481,7 @@
     const difficultyNumber = document.getElementById("difficulty-number");
     const difficultySubmit = document.getElementById("difficulty-submit");
     const difficultyBalls = Array.from(difficultyMeter.querySelectorAll(".ball"));
+    const retryMessage = document.getElementById("retry-message");
 
     let startTime;
     let timerInterval;
@@ -1698,6 +1707,8 @@
       gameOverDiv.innerHTML = '';
       gameOverDiv.style.display = 'none';
       starsDiv.innerHTML = '';
+      retryMessage.textContent = '';
+      retryMessage.style.display = 'none';
       difficultyMeter.classList.add("hidden");
       shareResults.style.display = 'none';
       currentStep = 0;
@@ -1872,6 +1883,23 @@
 
       const total = data.reduce((sum, row) => sum + Number(row.rating || 0), 0);
       return total / data.length;
+    }
+
+    async function hasLoggedInUser() {
+      if (currentUser && currentUser !== defaultUser) {
+        return true;
+      }
+      const sb = window.sb;
+      if (!sb?.auth?.getSession) {
+        return false;
+      }
+      try {
+        const { data } = await sb.auth.getSession();
+        return !!data.session?.user;
+      } catch (error) {
+        console.warn("Supabase session fetch failed:", error);
+        return false;
+      }
     }
 
     async function storeDifficultyRating(rating) {
@@ -2080,6 +2108,8 @@
           : `❌ Incorrect. The code was ${code.join("")}`;
 
         submitBtn.disabled = true;
+        retryMessage.textContent = '';
+        retryMessage.style.display = 'none';
 
         if (isCorrect) {
           if (totalTime <= 60) stars++;
@@ -2093,7 +2123,18 @@
 
         await showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
-        submitBtn.textContent = "Start Game";
+        if (!isCorrect) {
+          const loggedIn = await hasLoggedInUser();
+          if (loggedIn) {
+            submitBtn.textContent = "Retry Puzzle";
+            retryMessage.textContent = "Incorrect. Tap Retry Puzzle to try again.";
+            retryMessage.style.display = "block";
+          } else {
+            submitBtn.textContent = "Start Game";
+          }
+        } else {
+          submitBtn.textContent = "Start Game";
+        }
         submitBtn.disabled = false;
       }
     });
