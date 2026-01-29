@@ -2137,7 +2137,11 @@
 
       const rating = parseFloat(difficultySlider.value);
       await storeDifficultyRating(rating);
-
+      try {
+        await window.onSubmitDifficulty?.(rating);
+      } catch (e) {
+        console.warn("Difficulty submit failed:", e);
+      }
       difficultySubmit.textContent = "Submitted ✓";
       difficultySubmit.disabled = true;
     });
