@@ -1835,8 +1835,7 @@
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
 
-      // Keep your existing “must be logged in” rule
-      if (!currentUser || currentUser === defaultUser) return;
+      // must be logged in (checked via session below)
 
       // fallback: still store locally if supabase not loaded
       if (!sb) {
@@ -1907,7 +1906,13 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = !!currentUser?.id || (typeof currentUser === "string" && currentUser !== defaultUser);
+      let hasAccount = false;
+      try {
+        if (window.sb?.auth?.getSession) {
+          const { data } = await window.sb.auth.getSession();
+          hasAccount = !!data.session?.user;
+        }
+      } catch {}
       const canRate = hasAccount && isCorrect;
 
       // Start with default while we fetch
