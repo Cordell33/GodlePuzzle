@@ -1968,17 +1968,17 @@
       difficultySlider.value = String(clamp(averageRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
 
-      difficultySlider.disabled = !canRate;
+      difficultySlider.disabled = false; // always movable
 
       if (canRate) {
         difficultySubmit.textContent = "Submit";
         difficultySubmit.disabled = false;
       } else if (!hasAccount) {
-        difficultySubmit.textContent = "Log in to rate";
-        difficultySubmit.disabled = false;
+        difficultySubmit.textContent = "Log in to submit";
+        difficultySubmit.disabled = false; // let them click and open login
       } else {
-        difficultySubmit.textContent = "Solve to rate";
-        difficultySubmit.disabled = false;
+        difficultySubmit.textContent = "Solve to submit";
+        difficultySubmit.disabled = true;
       }
     }
 
@@ -2123,15 +2123,18 @@
     });
 
     difficultySubmit.addEventListener("click", async () => {
-      if (!currentUser || currentUser === defaultUser) {
+      const sb = await waitForSupabaseClient();
+
+      const { data } = await sb.auth.getSession();
+      const user = data.session?.user;
+
+      if (!user) {
         setMenuOpen(true);
-        usernameInput.focus();
+        githubLoginButton.focus();
         return;
       }
-      if (!isCorrect) {
-        window.location.reload();
-        return;
-      }
+      if (!isCorrect) return;
+
       const rating = parseFloat(difficultySlider.value);
       await storeDifficultyRating(rating);
       try {
@@ -2141,7 +2144,6 @@
       }
       difficultySubmit.textContent = "Submitted ✓";
       difficultySubmit.disabled = true;
-      difficultySlider.disabled = true;
     });
 
     renderDifficulty(parseFloat(difficultySlider.value));
