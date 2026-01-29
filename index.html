@@ -708,6 +708,7 @@
           <button type="submit" id="login-button">Log In</button>
         </div>
       </form>
+      <button id="github-login-button" type="button">Continue with GitHub</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
@@ -1464,6 +1465,7 @@
     const loginForm = document.getElementById("login-form");
     const usernameInput = document.getElementById("username-input");
     const loginButton = document.getElementById("login-button");
+    const githubLoginButton = document.getElementById("github-login-button");
     const logoutButton = document.getElementById("logout-button");
     const themeToggle = document.getElementById("theme-toggle");
     const difficultyMeter = document.getElementById("difficulty-meter");
@@ -1483,6 +1485,14 @@
     const defaultUser = "Guest";
     const storedUser = localStorage.getItem("godle_current_user");
     let currentUser = storedUser ? storedUser : defaultUser;
+
+    async function waitForSupabaseClient() {
+      for (let i = 0; i < 200; i++) {          // up to ~2 seconds
+        if (window.sb) return window.sb;
+        await new Promise(r => setTimeout(r, 10));
+      }
+      throw new Error("Supabase client (window.sb) not ready");
+    }
 
     submitBtn.textContent = "Start Game";
     scheduleNextReleaseCheck(nextScheduledReleaseDate);
@@ -1608,8 +1618,16 @@
       writeLocalStreak(s);
       renderStreak(s);
     }
-    function applyAuthState() {
-      if (currentUser && currentUser !== defaultUser) {
+    function applyAuthState(session = null) {
+      const sessionUser = session?.user;
+      if (sessionUser) {
+        currentUser = sessionUser.id;
+        localStorage.setItem("godle_current_user", currentUser);
+        userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
+        loginButton.textContent = "Logged In";
+        logoutButton.style.display = "none";
+        usernameInput.value = "";
+      } else if (currentUser && currentUser !== defaultUser) {
         userInfo.textContent = `👤 ${currentUser}`;
         loginButton.textContent = "Switch User";
         logoutButton.style.display = "block";
@@ -1623,6 +1641,19 @@
       renderStreak(readLocalStreak());
     }
     applyAuthState();
+
+    (async () => {
+      const sb = await waitForSupabaseClient();
+
+      // 1) restore session on load
+      const { data } = await sb.auth.getSession();
+      await applyAuthState(data.session);
+
+      // 2) listen for changes
+      sb.auth.onAuthStateChange(async (_event, session) => {
+        await applyAuthState(session);
+      });
+    })();
 
     loginForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -1640,6 +1671,18 @@
       applyAuthState();
       submitBtn.focus();
     });
+
+    if (githubLoginButton) {
+      githubLoginButton.addEventListener("click", async () => {
+        const sb = await waitForSupabaseClient();
+        await sb.auth.signInWithOAuth({
+          provider: "github",
+          options: {
+            redirectTo: "https://cordell33.github.io/GodlePuzzle/"
+          }
+        });
+      });
+    }
 
     logoutButton.addEventListener("click", () => {
       currentUser = defaultUser;
