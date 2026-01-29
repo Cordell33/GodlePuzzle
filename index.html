@@ -427,6 +427,19 @@
       color: #00bcd4;
       font-weight: bold;
     }
+    #user-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+    }
+    #user-info img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.35);
+    }
     #stars { 
       margin-top: 1rem; 
       font-size: 1.8rem; 
@@ -701,15 +714,14 @@
     <h2>Game Menu</h2>
     <p>Sign in to track your streak, then use the Start Game button below the board whenever you're ready to play.</p>
     <div class="login-panel" aria-live="polite">
-      <form id="login-form">
-        <label for="username-input">Player username</label>
-        <div class="login-row">
-          <input id="username-input" name="username" type="text" placeholder="Enter username" autocomplete="nickname" required />
-          <button type="submit" id="login-button">Log In</button>
-        </div>
-      </form>
+      <button id="github-login" type="button">Sign in with GitHub</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
-      <p class="login-hint">Your daily streak is saved per username on this device.</p>
+      <label for="display-name-input" class="sr-only">Display name</label>
+      <div class="login-row" id="display-name-row" style="display: none;">
+        <input id="display-name-input" type="text" placeholder="Enter display name" autocomplete="nickname" />
+        <button type="button" id="display-name-save">Save</button>
+      </div>
+      <p class="login-hint">Sign in to save your streak and rate difficulty.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <a class="external-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
     </div>
@@ -807,6 +819,7 @@
 
   <footer>created by Cordell Booth • <a href="https://patreon.com/GodleCreator" target="_blank">Donate</a> • <a href="https://www.facebook.com/groups/2109717096181882" target="_blank">Community</a></footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ====== PUZZLE CONTENT ======
 
@@ -1294,6 +1307,11 @@
    activePuzzleReleaseDate = initialPuzzle.releaseDate;
    nextScheduledReleaseDate = initialNextReleaseDate;
 
+    // ====== SUPABASE AUTH ======
+    const SUPABASE_URL = "https://dvcoloirtfntndvnvkwz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2Y29sb2lydGZudG5kdm52a3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MzI4NTMsImV4cCI6MjA4NTIwODg1M30.zygt7fYxhSkFJ_1tPe9Crhzj0kFj89gj9x6OCWtafG0";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
     // ====== GAME STATE & DOM ======
     let currentStep = 0;
@@ -1311,10 +1329,11 @@
     const shareResults = document.getElementById("share-results");
     const streakEl = document.getElementById("streak");
     const userInfo = document.getElementById("user-info");
-    const loginForm = document.getElementById("login-form");
-    const usernameInput = document.getElementById("username-input");
-    const loginButton = document.getElementById("login-button");
+    const githubLoginButton = document.getElementById("github-login");
     const logoutButton = document.getElementById("logout-button");
+    const displayNameRow = document.getElementById("display-name-row");
+    const displayNameInput = document.getElementById("display-name-input");
+    const displayNameSave = document.getElementById("display-name-save");
     const themeToggle = document.getElementById("theme-toggle");
     const difficultyMeter = document.getElementById("difficulty-meter");
     const difficultySlider = document.getElementById("difficulty-slider");
@@ -1331,8 +1350,8 @@
     let isCorrect = false;
     let gameActive = false;
     const defaultUser = "Guest";
-    const storedUser = localStorage.getItem("godle_current_user");
-    let currentUser = storedUser ? storedUser : defaultUser;
+    let currentUser = null;
+    let currentSession = null;
 
     submitBtn.textContent = "Start Game";
     scheduleNextReleaseCheck(nextScheduledReleaseDate);
@@ -1407,8 +1426,8 @@
     setMenuOpen(false);
 
     // ===== DAILY STREAK (LocalStorage only) =====
-    function userStreakKey(name) {
-      return `godle_user_${name}_streak`;
+    function userStreakKey(id) {
+      return `godle_user_${id}_streak`;
     }
     function todayKey(tz = "America/New_York") {
       return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
@@ -1418,20 +1437,20 @@
       return Math.round((b - a) / 86400000);
     }
     function readLocalStreak() {
-      if (!currentUser || currentUser === defaultUser) return { current: 0, best: 0, last: "" };
+      if (!currentUser?.id) return { current: 0, best: 0, last: "" };
       try {
-        const data = localStorage.getItem(userStreakKey(currentUser));
+        const data = localStorage.getItem(userStreakKey(currentUser.id));
         return data ? JSON.parse(data) : { current: 0, best: 0, last: "" };
       } catch {
         return { current: 0, best: 0, last: "" };
       }
     }
     function writeLocalStreak(data) {
-      if (!currentUser || currentUser === defaultUser) return;
-      localStorage.setItem(userStreakKey(currentUser), JSON.stringify(data));
+      if (!currentUser?.id) return;
+      localStorage.setItem(userStreakKey(currentUser.id), JSON.stringify(data));
     }
     function renderStreak(s) {
-      if (!currentUser || currentUser === defaultUser) {
+      if (!currentUser?.id) {
         streakEl.textContent = "🔥 Guest play (streak not saved)";
         return;
       }
@@ -1441,7 +1460,7 @@
       streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
     }
     function updateStreakOnWin() {
-      if (!currentUser || currentUser === defaultUser) return;
+      if (!currentUser?.id) return;
       const today = todayKey();
       let s = readLocalStreak();
       if (!s.last) {
@@ -1458,44 +1477,109 @@
       writeLocalStreak(s);
       renderStreak(s);
     }
-    function applyAuthState() {
-      if (currentUser && currentUser !== defaultUser) {
-        userInfo.textContent = `👤 ${currentUser}`;
-        loginButton.textContent = "Switch User";
-        logoutButton.style.display = "block";
-        usernameInput.value = currentUser;
-      } else {
+    function getUserProfile(user, storedUsername, storedAvatarUrl) {
+      if (!user) return null;
+      const metadata = user.user_metadata || {};
+      const username = storedUsername || metadata.user_name || metadata.preferred_username || metadata.login || metadata.name || user.email || "Player";
+      const avatarUrl = storedAvatarUrl || metadata.avatar_url || metadata.picture || "";
+      return { id: user.id, username, avatarUrl };
+    }
+
+    function renderUserInfo(profile) {
+      if (!profile) {
         userInfo.textContent = defaultUser;
-        loginButton.textContent = "Log In";
+        return;
+      }
+      const avatarHtml = profile.avatarUrl
+        ? `<img src="${profile.avatarUrl}" alt="${profile.username} avatar" />`
+        : "";
+      userInfo.innerHTML = `${avatarHtml}<span>👤 ${profile.username}</span>`;
+    }
+
+    async function upsertProfile(user, overrides = {}) {
+      if (!user) return;
+      const profile = getUserProfile(user, overrides.username, overrides.avatarUrl);
+      if (!profile) return;
+      await supabaseClient.from("profiles").upsert({
+        id: profile.id,
+        username: profile.username,
+        avatar_url: profile.avatarUrl || null,
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    async function applyAuthState(session) {
+      currentSession = session;
+      if (session?.user) {
+        const { data: storedProfile } = await supabaseClient
+          .from("profiles")
+          .select("username, avatar_url")
+          .eq("id", session.user.id)
+          .single();
+        currentUser = getUserProfile(
+          session.user,
+          storedProfile?.username,
+          storedProfile?.avatar_url
+        );
+        renderUserInfo(currentUser);
+        githubLoginButton.style.display = "none";
+        logoutButton.style.display = "block";
+        displayNameRow.style.display = "flex";
+        displayNameInput.value = currentUser?.username || "";
+        await upsertProfile(session.user, {
+          username: currentUser?.username,
+          avatarUrl: currentUser?.avatarUrl
+        });
+      } else {
+        currentUser = null;
+        renderUserInfo(null);
+        githubLoginButton.style.display = "block";
         logoutButton.style.display = "none";
-        usernameInput.value = "";
+        displayNameRow.style.display = "none";
+        displayNameInput.value = "";
       }
       renderStreak(readLocalStreak());
     }
-    applyAuthState();
 
-    loginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = usernameInput.value.trim();
-      if (!name) {
-        alert("Enter a username to log in.");
-        usernameInput.focus();
-        return;
-      }
-      currentUser = name;
-      localStorage.setItem("godle_current_user", currentUser);
-      if (!localStorage.getItem(userStreakKey(currentUser))) {
-        writeLocalStreak({ current: 0, best: 0, last: "" });
-      }
-      applyAuthState();
-      submitBtn.focus();
+    githubLoginButton.addEventListener("click", async () => {
+      await supabaseClient.auth.signInWithOAuth({
+        provider: "github",
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}` }
+      });
     });
 
-    logoutButton.addEventListener("click", () => {
-      currentUser = defaultUser;
-      localStorage.removeItem("godle_current_user");
-      applyAuthState();
-      usernameInput.focus();
+    logoutButton.addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+    });
+
+    displayNameSave.addEventListener("click", async () => {
+      if (!currentSession?.user) {
+        return;
+      }
+      const nextName = displayNameInput.value.trim();
+      if (!nextName) {
+        alert("Enter a display name.");
+        displayNameInput.focus();
+        return;
+      }
+      currentUser = {
+        ...currentUser,
+        username: nextName
+      };
+      renderUserInfo(currentUser);
+      await upsertProfile(currentSession.user, {
+        username: nextName,
+        avatarUrl: currentUser?.avatarUrl
+      });
+      renderStreak(readLocalStreak());
+    });
+
+    supabaseClient.auth.getSession().then(({ data }) => {
+      applyAuthState(data.session);
+    });
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+      applyAuthState(session);
     });
 
     // ===== INIT =====
@@ -1646,47 +1730,39 @@
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
-    function getDifficultyStorageKey() {
+    window.onSubmitDifficulty = async (rating) => {
+      const user = currentSession?.user;
+      if (!user) {
+        throw new Error("Not signed in.");
+      }
+      const puzzleDate = activePuzzleReleaseDate || getEasternDateString();
+      const { error } = await supabaseClient.from("difficulty_ratings").upsert(
+        {
+          user_id: user.id,
+          puzzle_date: puzzleDate,
+          rating
+        },
+        { onConflict: "user_id,puzzle_date" }
+      );
+      if (error) {
+        throw error;
+      }
+    };
+
+    async function fetchDifficultyAverage(defaultRating) {
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
-      return `godle:difficulty:${keyDate}`;
-    }
-
-    function getDifficultyRatingsKey() {
-      return `${getDifficultyStorageKey()}:ratings`;
-    }
-
-    function getDifficultyAverage(defaultRating) {
-      const stored = localStorage.getItem(getDifficultyRatingsKey());
-      if (!stored) {
+      if (!keyDate) {
         return defaultRating;
       }
-      try {
-        const ratings = JSON.parse(stored);
-        if (!Array.isArray(ratings) || ratings.length === 0) {
-          return defaultRating;
-        }
-        const total = ratings.reduce((sum, value) => sum + Number(value || 0), 0);
-        return total / ratings.length;
-      } catch {
+      const { data, error } = await supabaseClient
+        .from("difficulty_ratings")
+        .select("rating")
+        .eq("puzzle_date", keyDate);
+      if (error || !data || data.length === 0) {
         return defaultRating;
       }
-    }
-
-    function storeDifficultyRating(rating) {
-      const stored = localStorage.getItem(getDifficultyRatingsKey());
-      let ratings = [];
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            ratings = parsed;
-          }
-        } catch {
-          ratings = [];
-        }
-      }
-      ratings.push(rating);
-      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+      const total = data.reduce((sum, value) => sum + Number(value.rating || 0), 0);
+      return total / data.length;
     }
 
     function getBallColor(i) {
@@ -1713,10 +1789,10 @@
       });
     }
 
-    function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = currentUser && currentUser !== defaultUser;
+    async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
+      const hasAccount = !!currentUser?.id;
       const canRate = hasAccount && isCorrect;
-      const averageRating = getDifficultyAverage(defaultRating);
+      const averageRating = await fetchDifficultyAverage(defaultRating);
       const start = averageRating;
       difficultySlider.value = String(clamp(start, 1, 5));
       difficultySlider.disabled = !canRate;
@@ -1843,7 +1919,7 @@
           stars = 0;
         }
 
-        showDifficultyMeter({ defaultRating: difficultyRating });
+        void showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
         submitBtn.textContent = "Start Game";
         submitBtn.disabled = false;
@@ -1875,9 +1951,9 @@
     });
 
     difficultySubmit.addEventListener("click", async () => {
-      if (!currentUser || currentUser === defaultUser) {
+      if (!currentUser?.id) {
         setMenuOpen(true);
-        usernameInput.focus();
+        githubLoginButton.focus();
         return;
       }
       if (!isCorrect) {
@@ -1885,7 +1961,6 @@
         return;
       }
       const rating = parseFloat(difficultySlider.value);
-      storeDifficultyRating(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
