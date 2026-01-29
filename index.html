@@ -1907,7 +1907,7 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = currentUser && currentUser !== defaultUser;
+      const hasAccount = !!currentUser?.id;
       const canRate = hasAccount && isCorrect;
 
       // Start with default while we fetch
