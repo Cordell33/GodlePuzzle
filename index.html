@@ -708,6 +708,7 @@
           <button type="submit" id="login-button">Log In</button>
         </div>
       </form>
+      <button id="github-login-button" type="button">Continue with GitHub</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
@@ -807,6 +808,16 @@
 
   <footer>created by Cordell Booth • <a href="https://patreon.com/GodleCreator" target="_blank">Donate</a> • <a href="https://www.facebook.com/groups/2109717096181882" target="_blank">Community</a></footer>
 
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // TODO: paste your values from Supabase Project Settings → API
+    const SUPABASE_URL = "https://dvcoloirtfntndvnvkwz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2Y29sb2lydGZudG5kdm52a3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MzI4NTMsImV4cCI6MjA4NTIwODg1M30.zygt7fYxhSkFJ_1tPe9Crhzj0kFj89gj9x6OCWtafG0";
+
+    // Make it available to your existing non-module script
+    window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
   <script>
     // ====== PUZZLE CONTENT ======
 
@@ -1454,6 +1465,7 @@
     const loginForm = document.getElementById("login-form");
     const usernameInput = document.getElementById("username-input");
     const loginButton = document.getElementById("login-button");
+    const githubLoginButton = document.getElementById("github-login-button");
     const logoutButton = document.getElementById("logout-button");
     const themeToggle = document.getElementById("theme-toggle");
     const difficultyMeter = document.getElementById("difficulty-meter");
@@ -1473,6 +1485,14 @@
     const defaultUser = "Guest";
     const storedUser = localStorage.getItem("godle_current_user");
     let currentUser = storedUser ? storedUser : defaultUser;
+
+    async function waitForSupabaseClient() {
+      for (let i = 0; i < 200; i++) {          // up to ~2 seconds
+        if (window.sb) return window.sb;
+        await new Promise(r => setTimeout(r, 10));
+      }
+      throw new Error("Supabase client (window.sb) not ready");
+    }
 
     submitBtn.textContent = "Start Game";
     scheduleNextReleaseCheck(nextScheduledReleaseDate);
@@ -1598,8 +1618,16 @@
       writeLocalStreak(s);
       renderStreak(s);
     }
-    function applyAuthState() {
-      if (currentUser && currentUser !== defaultUser) {
+    function applyAuthState(session = null) {
+      const sessionUser = session?.user;
+      if (sessionUser) {
+        currentUser = sessionUser.id;
+        localStorage.setItem("godle_current_user", currentUser);
+        userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
+        loginButton.textContent = "Logged In";
+        logoutButton.style.display = "none";
+        usernameInput.value = "";
+      } else if (currentUser && currentUser !== defaultUser) {
         userInfo.textContent = `👤 ${currentUser}`;
         loginButton.textContent = "Switch User";
         logoutButton.style.display = "block";
@@ -1613,6 +1641,19 @@
       renderStreak(readLocalStreak());
     }
     applyAuthState();
+
+    (async () => {
+      const sb = await waitForSupabaseClient();
+
+      // 1) restore session on load
+      const { data } = await sb.auth.getSession();
+      await applyAuthState(data.session);
+
+      // 2) listen for changes
+      sb.auth.onAuthStateChange(async (_event, session) => {
+        await applyAuthState(session);
+      });
+    })();
 
     loginForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -1630,6 +1671,18 @@
       applyAuthState();
       submitBtn.focus();
     });
+
+    if (githubLoginButton) {
+      githubLoginButton.addEventListener("click", async () => {
+        const sb = await waitForSupabaseClient();
+        await sb.auth.signInWithOAuth({
+          provider: "github",
+          options: {
+            redirectTo: "https://cordell33.github.io/GodlePuzzle/"
+          }
+        });
+      });
+    }
 
     logoutButton.addEventListener("click", () => {
       currentUser = defaultUser;
@@ -1786,8 +1839,12 @@
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
+    function getPuzzleDate() {
+      return activePuzzleReleaseDate || getEasternDateString();
+    }
+
     function getDifficultyStorageKey() {
-      const keyDate = activePuzzleReleaseDate || getEasternDateString();
+      const keyDate = getPuzzleDate();
       return `godle:difficulty:${keyDate}`;
     }
 
@@ -1795,38 +1852,76 @@
       return `${getDifficultyStorageKey()}:ratings`;
     }
 
-    function getDifficultyAverage(defaultRating) {
-      const stored = localStorage.getItem(getDifficultyRatingsKey());
-      if (!stored) {
+    async function getDifficultyAverage(defaultRating) {
+      const sb = window.sb;
+      const keyDate = activePuzzleReleaseDate || getEasternDateString();
+
+      // fallback to local if supabase not loaded
+      if (!sb) return defaultRating;
+
+      const { data, error } = await sb
+        .from("difficulty_ratings")
+        .select("rating")
+        .eq("puzzle_date", keyDate);
+
+      if (error) {
+        console.warn("Supabase avg read failed:", error);
         return defaultRating;
       }
-      try {
-        const ratings = JSON.parse(stored);
-        if (!Array.isArray(ratings) || ratings.length === 0) {
-          return defaultRating;
-        }
-        const total = ratings.reduce((sum, value) => sum + Number(value || 0), 0);
-        return total / ratings.length;
-      } catch {
-        return defaultRating;
-      }
+      if (!data || data.length === 0) return defaultRating;
+
+      const total = data.reduce((sum, row) => sum + Number(row.rating || 0), 0);
+      return total / data.length;
     }
 
-    function storeDifficultyRating(rating) {
-      const stored = localStorage.getItem(getDifficultyRatingsKey());
-      let ratings = [];
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            ratings = parsed;
-          }
-        } catch {
-          ratings = [];
-        }
+    async function storeDifficultyRating(rating) {
+      const sb = window.sb;
+      const keyDate = activePuzzleReleaseDate || getEasternDateString();
+
+      // must be logged in (checked via session below)
+
+      // fallback: still store locally if supabase not loaded
+      if (!sb) {
+        const stored = localStorage.getItem(getDifficultyRatingsKey());
+        const ratings = stored ? (JSON.parse(stored) || []) : [];
+        ratings.push(rating);
+        localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+        return;
       }
-      ratings.push(rating);
-      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+
+      let session = null;
+      try {
+        const { data, error } = await sb.auth.getSession();
+        if (error) {
+          console.warn("Supabase session fetch failed:", error);
+          return;
+        }
+        session = data?.session || null;
+      } catch (err) {
+        console.warn("Supabase session fetch failed:", err);
+        return;
+      }
+
+      const userId = session?.user?.id;
+      if (!userId) {
+        console.warn("Supabase session missing user id; rating not stored.");
+        return;
+      }
+
+      const payload = {
+        user_id: userId,
+        puzzle_date: keyDate,
+        rating: Number(rating),
+      };
+
+      // Upsert: one rating per user per day
+      const { error } = await sb
+        .from("difficulty_ratings")
+        .upsert(payload, { onConflict: "user_id,puzzle_date" });
+
+      if (error) {
+        console.warn("Supabase rating upsert failed:", error);
+      }
     }
 
     function getBallColor(i) {
@@ -1853,13 +1948,28 @@
       });
     }
 
-    function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = currentUser && currentUser !== defaultUser;
+    async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
+      let hasAccount = false;
+      try {
+        if (window.sb?.auth?.getSession) {
+          const { data } = await window.sb.auth.getSession();
+          hasAccount = !!data.session?.user;
+        }
+      } catch {}
       const canRate = hasAccount && isCorrect;
-      const averageRating = getDifficultyAverage(defaultRating);
-      const start = averageRating;
-      difficultySlider.value = String(clamp(start, 1, 5));
+
+      // Start with default while we fetch
+      difficultySlider.value = String(clamp(defaultRating, 1, 5));
+      renderDifficulty(parseFloat(difficultySlider.value));
+      difficultyMeter.classList.remove("hidden");
+
+      // Fetch global average from Supabase
+      const averageRating = await getDifficultyAverage(defaultRating);
+      difficultySlider.value = String(clamp(averageRating, 1, 5));
+      renderDifficulty(parseFloat(difficultySlider.value));
+
       difficultySlider.disabled = !canRate;
+
       if (canRate) {
         difficultySubmit.textContent = "Submit";
         difficultySubmit.disabled = false;
@@ -1870,8 +1980,6 @@
         difficultySubmit.textContent = "Solve to rate";
         difficultySubmit.disabled = false;
       }
-      difficultyMeter.classList.remove("hidden");
-      renderDifficulty(parseFloat(difficultySlider.value));
     }
 
     function shareTwitter() {
@@ -1942,7 +2050,7 @@
     });
 
     // === Submit flow ===
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
       if (!gameActive) {
         startGame();
         return;
@@ -1983,7 +2091,7 @@
           stars = 0;
         }
 
-        showDifficultyMeter({ defaultRating: difficultyRating });
+        await showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
         submitBtn.textContent = "Start Game";
         submitBtn.disabled = false;
@@ -2025,7 +2133,7 @@
         return;
       }
       const rating = parseFloat(difficultySlider.value);
-      storeDifficultyRating(rating);
+      await storeDifficultyRating(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
