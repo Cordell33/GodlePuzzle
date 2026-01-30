@@ -790,9 +790,7 @@
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce",
-        storageKey: "godle-auth"
+        detectSessionInUrl: true
       }
     });
   </script>
@@ -1545,120 +1543,120 @@
 
     setMenuOpen(false);
 
-    // ===== DAILY STREAK (Synced when logged in) =====
-    function userStreakKey(name) {
-      return `godle_user_${name}_streak`;
-    }
-    function todayKey(tz = "America/New_York") {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
-    }
-    function daysBetween(d1, d2) {
-      const a = new Date(`${d1}T00:00:00Z`), b = new Date(`${d2}T00:00:00Z`);
-      return Math.round((b - a) / 86400000);
-    }
-    function readLocalStreak() {
-      if (!currentUser || currentUser === defaultUser) return { current: 0, best: 0, last: "" };
+    // ===== DAILY STREAK (Supabase completions) =====
+    async function getAuthedUser() {
+      const sb = await waitForSupabaseClient();
+      if (!sb?.auth) return null;
       try {
-        const data = localStorage.getItem(userStreakKey(currentUser));
-        return data ? JSON.parse(data) : { current: 0, best: 0, last: "" };
-      } catch {
-        return { current: 0, best: 0, last: "" };
-      }
-    }
-    function writeLocalStreak(data) {
-      if (!currentUser || currentUser === defaultUser) return;
-      localStorage.setItem(userStreakKey(currentUser), JSON.stringify(data));
-    }
-    function normalizeStreak(data) {
-      return {
-        current: Number(data?.current_streak) || 0,
-        best: Number(data?.best_streak) || 0,
-        last: data?.last_date || ""
-      };
-    }
-    async function readRemoteStreak() {
-      const sb = window.sb;
-      const userId = currentSession?.user?.id;
-      if (!sb || !userId) return null;
-      const { data, error } = await sb
-        .from("streaks")
-        .select("current_streak,best_streak,last_date")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (error) {
-        console.warn("Supabase streak read failed:", error);
+        const { data, error } = await sb.auth.getSession();
+        if (error) return null;
+        currentSession = data?.session || null;
+        return data?.session?.user || null;
+      } catch (error) {
+        console.warn("Supabase getSession failed:", error);
         return null;
       }
-      if (!data) return null;
-      return normalizeStreak(data);
     }
-    async function writeRemoteStreak(streak) {
-      const sb = window.sb;
-      const userId = currentSession?.user?.id;
-      if (!sb || !userId) return false;
-      const payload = {
-        user_id: userId,
-        current_streak: Number(streak.current) || 0,
-        best_streak: Number(streak.best) || 0,
-        last_date: streak.last || null
-      };
-      const { error } = await sb.from("streaks").upsert(payload, { onConflict: "user_id" });
-      if (error) {
-        console.warn("Supabase streak upsert failed:", error);
-        return false;
-      }
-      return true;
+
+    function parseDateString(dateString) {
+      const [year, month, day] = dateString.split("-").map(Number);
+      return new Date(Date.UTC(year, month - 1, day));
     }
-    async function readSyncedStreak() {
-      if (!currentSession?.user) {
-        return readLocalStreak();
-      }
+
+    function formatDateString(date) {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function shiftDateString(dateString, deltaDays) {
+      const date = parseDateString(dateString);
+      date.setUTCDate(date.getUTCDate() + deltaDays);
+      return formatDateString(date);
+    }
+
+    async function fetchUserCompletions() {
       const sb = await waitForSupabaseClient();
-      if (sb) {
-        const remote = await readRemoteStreak();
-        if (remote) {
-          writeLocalStreak(remote);
-          return remote;
-        }
+      const user = await getAuthedUser();
+      if (!sb || !user) return [];
+      const { data, error } = await sb
+        .from("puzzle_completions")
+        .select("puzzle_date")
+        .eq("user_id", user.id)
+        .order("puzzle_date", { ascending: false })
+        .limit(60);
+      if (error) {
+        console.warn("Supabase completion read failed:", error);
+        return [];
       }
-      return readLocalStreak();
+      return (data || [])
+        .map((row) => row.puzzle_date)
+        .filter(Boolean);
     }
+
+    function computeStreakFromDates(dates, todayEastern) {
+      if (!Array.isArray(dates) || dates.length === 0) {
+        return { current: 0, best: 0 };
+      }
+      const uniqueDates = Array.from(new Set(dates));
+      const dateSet = new Set(uniqueDates);
+      let current = 0;
+      let cursor = todayEastern;
+      while (dateSet.has(cursor)) {
+        current += 1;
+        cursor = shiftDateString(cursor, -1);
+      }
+      const sorted = uniqueDates
+        .map((dateString) => ({ dateString, time: parseDateString(dateString).getTime() }))
+        .sort((a, b) => a.time - b.time);
+      let best = 0;
+      let run = 0;
+      for (let i = 0; i < sorted.length; i += 1) {
+        if (i === 0) {
+          run = 1;
+        } else {
+          const prev = sorted[i - 1].dateString;
+          const expected = shiftDateString(prev, 1);
+          run = sorted[i].dateString === expected ? run + 1 : 1;
+        }
+        best = Math.max(best, run);
+      }
+      return { current, best };
+    }
+
+    async function insertCompletionOnWin(starsEarned, timeSeconds) {
+      const sb = await waitForSupabaseClient();
+      const user = await getAuthedUser();
+      if (!sb || !user) return { inserted: false, alreadyCompleted: false };
+      const puzzleDate = getPuzzleDate();
+      const payload = {
+        user_id: user.id,
+        puzzle_date: puzzleDate
+      };
+      const { error } = await sb
+        .from("puzzle_completions")
+        .upsert(payload, { onConflict: "user_id,puzzle_date", ignoreDuplicates: true });
+      if (error) {
+        if (error.code === "23505") {
+          return { inserted: false, alreadyCompleted: true };
+        }
+        console.warn("Supabase completion upsert failed:", error);
+        return { inserted: false, alreadyCompleted: false };
+      }
+      return { inserted: true, alreadyCompleted: false };
+    }
+
     async function syncStreakDisplay() {
       if (!currentSession?.user) {
-        renderStreak(readLocalStreak());
-        return;
-      }
-      const streak = await readSyncedStreak();
-      renderStreak(streak);
-    }
-    function renderStreak(s) {
-      if (!currentUser || currentUser === defaultUser) {
         streakEl.textContent = "🔥 Guest play (streak not saved)";
         return;
       }
-      const current = s?.current || 0;
-      const best = s?.best || 0;
-      const t = current === 1 ? "day" : "days";
-      streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
-    }
-    async function updateStreakOnWin() {
-      if (!currentUser || currentUser === defaultUser) return;
-      const today = todayKey();
-      let s = await readSyncedStreak();
-      if (!s.last) {
-        s.current = 1; s.best = 1; s.last = today;
-      } else if (s.last === today) {
-        // already counted today — do nothing
-      } else {
-        const gap = daysBetween(s.last, today);
-        if (gap === 1) s.current += 1;
-        else if (gap > 1) s.current = 1;
-        s.best = Math.max(s.best, s.current);
-        s.last = today;
-      }
-      writeLocalStreak(s);
-      await writeRemoteStreak(s);
-      renderStreak(s);
+      const todayEastern = getEasternDateString();
+      const completions = await fetchUserCompletions();
+      const streak = computeStreakFromDates(completions, todayEastern);
+      const t = streak.current === 1 ? "day" : "days";
+      streakEl.textContent = `🔥 ${streak.current}-${t} streak (best ${streak.best})`;
     }
     function getSessionUsername(sessionUser) {
       if (!sessionUser) return "";
@@ -1672,10 +1670,14 @@
         currentUser = username || sessionUser.id;
         userInfo.textContent = `👤 ${username || sessionUser.id}`;
         logoutButton.style.display = "block";
+        if (githubLoginButton) githubLoginButton.style.display = "none";
+        if (googleLoginButton) googleLoginButton.style.display = "none";
       } else {
         currentUser = defaultUser;
         userInfo.textContent = defaultUser;
         logoutButton.style.display = "none";
+        if (githubLoginButton) githubLoginButton.style.display = "inline-flex";
+        if (googleLoginButton) googleLoginButton.style.display = "inline-flex";
       }
       syncStreakDisplay();
     }
@@ -1879,48 +1881,10 @@
       return activePuzzleReleaseDate || getEasternDateString();
     }
 
-    function getDifficultyStorageKey() {
-      const keyDate = getPuzzleDate();
-      return `godle:difficulty:${keyDate}`;
-    }
-
-    function getDifficultyRatingsKey() {
-      return `${getDifficultyStorageKey()}:ratings`;
-    }
-
-    function getDifficultySubmissionKey() {
-      const userId = currentSession?.user?.id;
-      if (!userId) return null;
-      return `${getDifficultyStorageKey()}:submitted:${userId}`;
-    }
-
-    function storeLocalDifficultyRating(rating) {
-      const stored = localStorage.getItem(getDifficultyRatingsKey());
-      const ratings = stored ? (JSON.parse(stored) || []) : [];
-      ratings.push(rating);
-      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
-    }
-
-    function storeLocalDifficultySubmission(rating) {
-      const key = getDifficultySubmissionKey();
-      if (!key) return;
-      localStorage.setItem(key, String(rating));
-    }
-
-    function getLocalDifficultySubmission() {
-      const key = getDifficultySubmissionKey();
-      if (!key) return null;
-      const stored = localStorage.getItem(key);
-      if (stored === null) return null;
-      const parsed = Number(stored);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-
     async function getDifficultyAverage(defaultRating) {
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
 
-      // fallback to local if supabase not loaded
       if (!sb) return defaultRating;
 
       const { data, error } = await sb
@@ -1943,9 +1907,7 @@
       const userId = currentSession?.user?.id;
       if (!userId) return null;
 
-      if (!sb) {
-        return getLocalDifficultySubmission();
-      }
+      if (!sb) return null;
 
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
       const { data, error } = await sb
@@ -1957,24 +1919,34 @@
 
       if (error) {
         console.warn("Supabase user rating read failed:", error);
-        return getLocalDifficultySubmission();
+        return null;
       }
-      if (!data) return getLocalDifficultySubmission();
+      if (!data) return null;
       const rating = Number(data.rating);
       return Number.isFinite(rating) ? rating : null;
+    }
+
+    async function hasRatedToday(userId, puzzleDate) {
+      const sb = await waitForSupabaseClient();
+      if (!sb || !userId) return false;
+      const { data, error } = await sb
+        .from("difficulty_ratings")
+        .select("rating")
+        .eq("puzzle_date", puzzleDate)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) {
+        console.warn("Supabase rating check failed:", error);
+        return false;
+      }
+      return !!data;
     }
 
     async function storeDifficultyRating(rating) {
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
 
-      // must be logged in (checked via session below)
-
-      // fallback: still store locally if supabase not loaded
-      if (!sb) {
-        storeLocalDifficultyRating(rating);
-        return;
-      }
+      if (!sb) return false;
 
       const userId = currentSession?.user?.id;
       if (!userId) {
@@ -1988,17 +1960,19 @@
         rating: Number(rating),
       };
 
-      const existing = await getUserDifficultyRating();
-      if (typeof existing === "number") {
+      const alreadyRated = await hasRatedToday(userId, keyDate);
+      if (alreadyRated) {
         return false;
       }
 
-      // Insert once per user per day (ignore duplicates)
       const { error } = await sb
         .from("difficulty_ratings")
-        .insert(payload, { onConflict: "user_id,puzzle_date", ignoreDuplicates: true });
+        .upsert(payload, { onConflict: "user_id,puzzle_date" });
 
       if (error) {
+        if (error.code === "23505") {
+          return false;
+        }
         console.warn("Supabase rating insert failed:", error);
         return false;
       }
@@ -2030,42 +2004,48 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = !!currentSession?.user;
-      const canRate = hasAccount && isCorrect;
+      const user = await getAuthedUser();
+      const hasAccount = !!user;
+      const puzzleDate = getPuzzleDate();
 
       // Start with default while we fetch
       difficultySlider.value = String(clamp(defaultRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
       difficultyMeter.classList.remove("hidden");
 
-      const submittedRating = await getUserDifficultyRating();
-      const hasSubmitted = typeof submittedRating === "number";
+      const alreadyRated = hasAccount ? await hasRatedToday(user.id, puzzleDate) : false;
+      const submittedRating = alreadyRated ? await getUserDifficultyRating() : null;
 
       // Fetch global average from Supabase
       const averageRating = await getDifficultyAverage(defaultRating);
-      const targetRating = hasSubmitted ? submittedRating : averageRating;
+      const targetRating = typeof submittedRating === "number" ? submittedRating : averageRating;
       difficultySlider.value = String(clamp(targetRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
 
-      if (hasSubmitted) {
+      if (!hasAccount) {
         difficultySlider.disabled = true;
-        difficultySubmit.textContent = "Submitted ✓";
+        difficultySubmit.textContent = "Log in to rate";
         difficultySubmit.disabled = true;
         return;
       }
 
-      difficultySlider.disabled = !canRate;
+      if (alreadyRated) {
+        difficultySlider.disabled = true;
+        difficultySubmit.textContent = "Already rated";
+        difficultySubmit.disabled = true;
+        return;
+      }
 
-      if (canRate) {
-        difficultySubmit.textContent = "Submit";
-        difficultySubmit.disabled = false;
-      } else if (!hasAccount) {
-        difficultySubmit.textContent = "Log in to submit";
-        difficultySubmit.disabled = false;
-      } else {
+      if (!isCorrect) {
+        difficultySlider.disabled = true;
         difficultySubmit.textContent = "Solve to submit";
         difficultySubmit.disabled = true;
+        return;
       }
+
+      difficultySlider.disabled = false;
+      difficultySubmit.textContent = "Submit";
+      difficultySubmit.disabled = false;
     }
 
     function shareTwitter() {
@@ -2173,7 +2153,8 @@
           if (totalTime <= 60) stars++;
           stars += correctCount;
           starsDiv.textContent = `⭐ Stars: ${stars}`;
-          await updateStreakOnWin();
+          await insertCompletionOnWin(stars, totalTime);
+          await syncStreakDisplay();
           showShareButtons();
         } else {
           stars = 0;
@@ -2233,12 +2214,11 @@
       }
       const stored = await storeDifficultyRating(rating);
       if (!stored) {
-        difficultySubmit.textContent = "Submitted ✓";
+        difficultySubmit.textContent = "Already rated";
         difficultySubmit.disabled = true;
         difficultySlider.disabled = true;
         return;
       }
-      storeLocalDifficultySubmission(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
