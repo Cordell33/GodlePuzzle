@@ -1988,14 +1988,21 @@
         rating: Number(rating),
       };
 
-      // Upsert: one rating per user per day
+      const existing = await getUserDifficultyRating();
+      if (typeof existing === "number") {
+        return false;
+      }
+
+      // Insert once per user per day (ignore duplicates)
       const { error } = await sb
         .from("difficulty_ratings")
-        .upsert(payload, { onConflict: "user_id,puzzle_date" });
+        .insert(payload, { onConflict: "user_id,puzzle_date", ignoreDuplicates: true });
 
       if (error) {
-        console.warn("Supabase rating upsert failed:", error);
+        console.warn("Supabase rating insert failed:", error);
+        return false;
       }
+      return true;
     }
 
     function getBallColor(i) {
@@ -2224,7 +2231,13 @@
         githubLoginButton.focus();
         return;
       }
-      await storeDifficultyRating(rating);
+      const stored = await storeDifficultyRating(rating);
+      if (!stored) {
+        difficultySubmit.textContent = "Submitted ✓";
+        difficultySubmit.disabled = true;
+        difficultySlider.disabled = true;
+        return;
+      }
       storeLocalDifficultySubmission(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
