@@ -1478,8 +1478,6 @@
     const shareResults = document.getElementById("share-results");
     const streakEl = document.getElementById("streak");
     const userInfo = document.getElementById("user-info");
-    const loginForm = document.getElementById("login-form");
-    const usernameInput = document.getElementById("username-input");
     const loginButton = document.getElementById("login-button");
     const githubLoginButton = document.getElementById("github-login-button");
     const logoutButton = document.getElementById("logout-button");
@@ -1645,27 +1643,26 @@
         userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
         loginButton.textContent = "Logged In";
         logoutButton.style.display = "block";
-        usernameInput.value = "";
       } else {
         currentUser = defaultUser;
         userInfo.textContent = defaultUser;
         loginButton.textContent = "Log In";
         logoutButton.style.display = "none";
-        usernameInput.value = "";
       }
       renderStreak(readLocalStreak());
     }
     applyAuthState();
 
     (async () => {
-      if (!window.sb?.auth) return;
+      const sb = await waitForSupabaseClient();
+      if (!sb?.auth) return;
       try {
-        const { data } = await window.sb.auth.getSession();
+        const { data } = await sb.auth.getSession();
         await applyAuthState(data.session);
       } catch (error) {
         console.warn("Supabase session restore failed:", error);
       }
-      window.sb.auth.onAuthStateChange(async (_event, session) => {
+      sb.auth.onAuthStateChange(async (_event, session) => {
         await applyAuthState(session);
       });
     })();
@@ -1683,7 +1680,6 @@
 
     logoutButton.addEventListener("click", async () => {
       applyAuthState();
-      usernameInput.focus();
       if (window.sb?.auth?.signOut) {
         try {
           await window.sb.auth.signOut();
