@@ -679,7 +679,7 @@
       <button id="github-login-button" type="button">Continue with GitHub</button>
       <button id="google-login" type="button">Sign in with Google</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
-      <p class="login-hint">Your daily streak is saved to your account on this device.</p>
+      <p class="login-hint">Your daily streak syncs to your account across devices.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <a class="external-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
     </div>
@@ -1545,7 +1545,7 @@
 
     setMenuOpen(false);
 
-    // ===== DAILY STREAK (LocalStorage only) =====
+    // ===== DAILY STREAK (Synced when logged in) =====
     function userStreakKey(name) {
       return `godle_user_${name}_streak`;
     }
@@ -1569,6 +1569,68 @@
       if (!currentUser || currentUser === defaultUser) return;
       localStorage.setItem(userStreakKey(currentUser), JSON.stringify(data));
     }
+    function normalizeStreak(data) {
+      return {
+        current: Number(data?.current_streak) || 0,
+        best: Number(data?.best_streak) || 0,
+        last: data?.last_date || ""
+      };
+    }
+    async function readRemoteStreak() {
+      const sb = window.sb;
+      const userId = currentSession?.user?.id;
+      if (!sb || !userId) return null;
+      const { data, error } = await sb
+        .from("streaks")
+        .select("current_streak,best_streak,last_date")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) {
+        console.warn("Supabase streak read failed:", error);
+        return null;
+      }
+      if (!data) return null;
+      return normalizeStreak(data);
+    }
+    async function writeRemoteStreak(streak) {
+      const sb = window.sb;
+      const userId = currentSession?.user?.id;
+      if (!sb || !userId) return false;
+      const payload = {
+        user_id: userId,
+        current_streak: Number(streak.current) || 0,
+        best_streak: Number(streak.best) || 0,
+        last_date: streak.last || null
+      };
+      const { error } = await sb.from("streaks").upsert(payload, { onConflict: "user_id" });
+      if (error) {
+        console.warn("Supabase streak upsert failed:", error);
+        return false;
+      }
+      return true;
+    }
+    async function readSyncedStreak() {
+      if (!currentSession?.user) {
+        return readLocalStreak();
+      }
+      const sb = await waitForSupabaseClient();
+      if (sb) {
+        const remote = await readRemoteStreak();
+        if (remote) {
+          writeLocalStreak(remote);
+          return remote;
+        }
+      }
+      return readLocalStreak();
+    }
+    async function syncStreakDisplay() {
+      if (!currentSession?.user) {
+        renderStreak(readLocalStreak());
+        return;
+      }
+      const streak = await readSyncedStreak();
+      renderStreak(streak);
+    }
     function renderStreak(s) {
       if (!currentUser || currentUser === defaultUser) {
         streakEl.textContent = "🔥 Guest play (streak not saved)";
@@ -1579,10 +1641,10 @@
       const t = current === 1 ? "day" : "days";
       streakEl.textContent = `🔥 ${current}-${t} streak (best ${best})`;
     }
-    function updateStreakOnWin() {
+    async function updateStreakOnWin() {
       if (!currentUser || currentUser === defaultUser) return;
       const today = todayKey();
-      let s = readLocalStreak();
+      let s = await readSyncedStreak();
       if (!s.last) {
         s.current = 1; s.best = 1; s.last = today;
       } else if (s.last === today) {
@@ -1595,6 +1657,7 @@
         s.last = today;
       }
       writeLocalStreak(s);
+      await writeRemoteStreak(s);
       renderStreak(s);
     }
     function getSessionUsername(sessionUser) {
@@ -1614,7 +1677,7 @@
         userInfo.textContent = defaultUser;
         logoutButton.style.display = "none";
       }
-      renderStreak(readLocalStreak());
+      syncStreakDisplay();
     }
     applyAuthState();
 
@@ -1925,14 +1988,21 @@
         rating: Number(rating),
       };
 
-      // Upsert: one rating per user per day
+      const existing = await getUserDifficultyRating();
+      if (typeof existing === "number") {
+        return false;
+      }
+
+      // Insert once per user per day (ignore duplicates)
       const { error } = await sb
         .from("difficulty_ratings")
-        .upsert(payload, { onConflict: "user_id,puzzle_date" });
+        .insert(payload, { onConflict: "user_id,puzzle_date", ignoreDuplicates: true });
 
       if (error) {
-        console.warn("Supabase rating upsert failed:", error);
+        console.warn("Supabase rating insert failed:", error);
+        return false;
       }
+      return true;
     }
 
     function getBallColor(i) {
@@ -2103,7 +2173,7 @@
           if (totalTime <= 60) stars++;
           stars += correctCount;
           starsDiv.textContent = `⭐ Stars: ${stars}`;
-          updateStreakOnWin();
+          await updateStreakOnWin();
           showShareButtons();
         } else {
           stars = 0;
@@ -2161,7 +2231,13 @@
         githubLoginButton.focus();
         return;
       }
-      await storeDifficultyRating(rating);
+      const stored = await storeDifficultyRating(rating);
+      if (!stored) {
+        difficultySubmit.textContent = "Submitted ✓";
+        difficultySubmit.disabled = true;
+        difficultySlider.disabled = true;
+        return;
+      }
       storeLocalDifficultySubmission(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
