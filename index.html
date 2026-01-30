@@ -824,8 +824,15 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2Y29sb2lydGZudG5kdm52a3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MzI4NTMsImV4cCI6MjA4NTIwODg1M30.zygt7fYxhSkFJ_1tPe9Crhzj0kFj89gj9x6OCWtafG0";
 
     // Make it available to your existing non-module script
-    window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.dispatchEvent(new Event("supabase-ready"));
+    window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+        storageKey: "godle-auth"
+      }
+    });
   </script>
   <script>
     // ====== PUZZLE CONTENT ======
@@ -1651,23 +1658,21 @@
     applyAuthState();
 
     (async () => {
-      const sb = await waitForSupabaseClient();
-      if (!sb?.auth) return;
+      if (!window.sb?.auth) return;
       try {
-        const { data } = await sb.auth.getSession();
+        const { data } = await window.sb.auth.getSession();
         await applyAuthState(data.session);
       } catch (error) {
         console.warn("Supabase session restore failed:", error);
       }
-      sb.auth.onAuthStateChange(async (_event, session) => {
+      window.sb.auth.onAuthStateChange(async (_event, session) => {
         await applyAuthState(session);
       });
     })();
 
     if (githubLoginButton) {
       githubLoginButton.addEventListener("click", async () => {
-        const sb = await waitForSupabaseClient();
-        await sb.auth.signInWithOAuth({
+        await window.sb.auth.signInWithOAuth({
           provider: "github",
           options: {
             redirectTo: "https://cordell33.github.io/GodlePuzzle/"
@@ -1679,10 +1684,9 @@
     logoutButton.addEventListener("click", async () => {
       applyAuthState();
       usernameInput.focus();
-      const sb = await waitForSupabaseClient();
-      if (sb?.auth?.signOut) {
+      if (window.sb?.auth?.signOut) {
         try {
-          await sb.auth.signOut();
+          await window.sb.auth.signOut();
         } catch (error) {
           console.warn("Supabase sign out failed:", error);
         }
