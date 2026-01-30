@@ -365,30 +365,6 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
       transition: background 0.3s ease, box-shadow 0.3s ease;
     }
-    .login-panel label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    .login-row {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .login-panel input[type="text"] {
-      flex: 1;
-      padding: 0.6rem 0.8rem;
-      border-radius: 8px;
-      border: 1px solid #444;
-      background: #1e1e1e;
-      color: #fff;
-      font-size: 1rem;
-      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-    .login-panel input[type="text"]:focus {
-      outline: none;
-      border-color: #00bcd4;
-      box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
-    }
     .login-panel button {
       padding: 0.6rem 1.2rem;
       border-radius: 8px;
@@ -621,17 +597,6 @@
       background: rgba(0, 0, 0, 0.05);
       box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
     }
-    body.light-mode .login-panel input[type="text"] {
-      background: #fff;
-      color: #111;
-      border-color: #b8bec6;
-    }
-    body.light-mode .login-panel input[type="text"]::placeholder {
-      color: #757575;
-    }
-    body.light-mode .login-panel input[type="text"]:focus {
-      box-shadow: 0 0 0 3px rgba(0, 160, 183, 0.25);
-    }
     body.light-mode .login-hint {
       color: #555;
     }
@@ -711,17 +676,10 @@
     <h2>Game Menu</h2>
     <p>Sign in to track your streak, then use the Start Game button below the board whenever you're ready to play.</p>
     <div class="login-panel" aria-live="polite">
-      <form id="login-form">
-        <label for="username-input">Player username</label>
-        <div class="login-row">
-          <input id="username-input" name="username" type="text" placeholder="Enter username" autocomplete="nickname" required />
-          <button type="submit" id="login-button">Log In</button>
-        </div>
-      </form>
       <button id="github-login-button" type="button">Continue with GitHub</button>
       <button id="google-login" type="button">Sign in with Google</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
-      <p class="login-hint">Your daily streak is saved per username on this device.</p>
+      <p class="login-hint">Your daily streak is saved to your account on this device.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <a class="external-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
     </div>
@@ -1482,7 +1440,6 @@
     const shareResults = document.getElementById("share-results");
     const streakEl = document.getElementById("streak");
     const userInfo = document.getElementById("user-info");
-    const loginButton = document.getElementById("login-button");
     const githubLoginButton = document.getElementById("github-login-button");
     const googleLoginButton = document.getElementById("google-login");
     const logoutButton = document.getElementById("logout-button");
@@ -1646,12 +1603,10 @@
       if (sessionUser) {
         currentUser = sessionUser.id;
         userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
-        loginButton.textContent = "Logged In";
         logoutButton.style.display = "block";
       } else {
         currentUser = defaultUser;
         userInfo.textContent = defaultUser;
-        loginButton.textContent = "Log In";
         logoutButton.style.display = "none";
       }
       renderStreak(readLocalStreak());
@@ -1865,11 +1820,32 @@
       return `${getDifficultyStorageKey()}:ratings`;
     }
 
+    function getDifficultySubmissionKey() {
+      const userId = currentSession?.user?.id;
+      if (!userId) return null;
+      return `${getDifficultyStorageKey()}:submitted:${userId}`;
+    }
+
     function storeLocalDifficultyRating(rating) {
       const stored = localStorage.getItem(getDifficultyRatingsKey());
       const ratings = stored ? (JSON.parse(stored) || []) : [];
       ratings.push(rating);
       localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+    }
+
+    function storeLocalDifficultySubmission(rating) {
+      const key = getDifficultySubmissionKey();
+      if (!key) return;
+      localStorage.setItem(key, String(rating));
+    }
+
+    function getLocalDifficultySubmission() {
+      const key = getDifficultySubmissionKey();
+      if (!key) return null;
+      const stored = localStorage.getItem(key);
+      if (stored === null) return null;
+      const parsed = Number(stored);
+      return Number.isFinite(parsed) ? parsed : null;
     }
 
     async function getDifficultyAverage(defaultRating) {
@@ -1892,6 +1868,32 @@
 
       const total = data.reduce((sum, row) => sum + Number(row.rating || 0), 0);
       return total / data.length;
+    }
+
+    async function getUserDifficultyRating() {
+      const sb = window.sb;
+      const userId = currentSession?.user?.id;
+      if (!userId) return null;
+
+      if (!sb) {
+        return getLocalDifficultySubmission();
+      }
+
+      const keyDate = activePuzzleReleaseDate || getEasternDateString();
+      const { data, error } = await sb
+        .from("difficulty_ratings")
+        .select("rating")
+        .eq("puzzle_date", keyDate)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Supabase user rating read failed:", error);
+        return null;
+      }
+      if (!data) return null;
+      const rating = Number(data.rating);
+      return Number.isFinite(rating) ? rating : null;
     }
 
     async function storeDifficultyRating(rating) {
@@ -1961,10 +1963,21 @@
       renderDifficulty(parseFloat(difficultySlider.value));
       difficultyMeter.classList.remove("hidden");
 
+      const submittedRating = await getUserDifficultyRating();
+      const hasSubmitted = typeof submittedRating === "number";
+
       // Fetch global average from Supabase
       const averageRating = await getDifficultyAverage(defaultRating);
-      difficultySlider.value = String(clamp(averageRating, 1, 5));
+      const targetRating = hasSubmitted ? submittedRating : averageRating;
+      difficultySlider.value = String(clamp(targetRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
+
+      if (hasSubmitted) {
+        difficultySlider.disabled = true;
+        difficultySubmit.textContent = "Submitted ✓";
+        difficultySubmit.disabled = true;
+        return;
+      }
 
       difficultySlider.disabled = !canRate;
 
@@ -2134,7 +2147,6 @@
     });
 
     difficultySubmit.addEventListener("click", async () => {
-      const sb = await waitForSupabaseClient();
       if (!isCorrect) return;
 
       const rating = parseFloat(difficultySlider.value);
@@ -2145,6 +2157,7 @@
         return;
       }
       await storeDifficultyRating(rating);
+      storeLocalDifficultySubmission(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
@@ -2152,6 +2165,7 @@
       }
       difficultySubmit.textContent = "Submitted ✓";
       difficultySubmit.disabled = true;
+      difficultySlider.disabled = true;
     });
 
     renderDifficulty(parseFloat(difficultySlider.value));
