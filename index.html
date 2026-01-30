@@ -1898,6 +1898,13 @@
       return `${getDifficultyStorageKey()}:ratings`;
     }
 
+    function storeLocalDifficultyRating(rating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      const ratings = stored ? (JSON.parse(stored) || []) : [];
+      ratings.push(rating);
+      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+    }
+
     async function getDifficultyAverage(defaultRating) {
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
@@ -1942,10 +1949,7 @@
 
       // fallback: still store locally if supabase not loaded
       if (!sb) {
-        const stored = localStorage.getItem(getDifficultyRatingsKey());
-        const ratings = stored ? (JSON.parse(stored) || []) : [];
-        ratings.push(rating);
-        localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+        storeLocalDifficultyRating(rating);
         return;
       }
 
@@ -2028,7 +2032,7 @@
         difficultySubmit.textContent = "Submit";
         difficultySubmit.disabled = false;
       } else if (!hasAccount) {
-        difficultySubmit.textContent = "Log in to submit";
+        difficultySubmit.textContent = "Submit rating";
         difficultySubmit.disabled = false; // let them click and open login
       } else {
         difficultySubmit.textContent = "Solve to submit";
@@ -2191,23 +2195,15 @@
 
     difficultySubmit.addEventListener("click", async () => {
       const sb = await waitForSupabaseClient();
-      if (!sb?.auth?.getSession) {
-        alert("Login is still loading. Please try again in a moment.");
-        return;
-      }
-
-      const { data } = await sb.auth.getSession();
-      const user = data.session?.user;
-
-      if (!user) {
-        setMenuOpen(true);
-        githubLoginButton.focus();
-        return;
-      }
       if (!isCorrect) return;
 
       const rating = parseFloat(difficultySlider.value);
-      await storeDifficultyRating(rating);
+      const hasAccount = await hasLoggedInUser();
+      if (hasAccount) {
+        await storeDifficultyRating(rating);
+      } else {
+        storeLocalDifficultyRating(rating);
+      }
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
