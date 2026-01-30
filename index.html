@@ -1493,8 +1493,7 @@
     let isCorrect = false;
     let gameActive = false;
     const defaultUser = "Guest";
-    const storedUser = localStorage.getItem("godle_current_user");
-    let currentUser = storedUser ? storedUser : defaultUser;
+    let currentUser = defaultUser;
     let currentSession = null;
 
     async function waitForSupabaseClient({ timeoutMs = 10000 } = {}) {
@@ -1636,17 +1635,12 @@
       const sessionUser = session?.user;
       if (sessionUser) {
         currentUser = sessionUser.id;
-        localStorage.setItem("godle_current_user", currentUser);
         userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
         loginButton.textContent = "Logged In";
         logoutButton.style.display = "block";
         usernameInput.value = "";
-      } else if (currentUser && currentUser !== defaultUser) {
-        userInfo.textContent = `👤 ${currentUser}`;
-        loginButton.textContent = "Switch User";
-        logoutButton.style.display = "block";
-        usernameInput.value = currentUser;
       } else {
+        currentUser = defaultUser;
         userInfo.textContent = defaultUser;
         loginButton.textContent = "Log In";
         logoutButton.style.display = "none";
@@ -1670,37 +1664,6 @@
       });
     })();
 
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const name = usernameInput.value.trim();
-      if (!name) {
-        alert("Enter a username to log in.");
-        usernameInput.focus();
-        return;
-      }
-      currentUser = name;
-      localStorage.setItem("godle_current_user", currentUser);
-      if (!localStorage.getItem(userStreakKey(currentUser))) {
-        writeLocalStreak({ current: 0, best: 0, last: "" });
-      }
-      applyAuthState();
-      submitBtn.focus();
-
-      const sb = await waitForSupabaseClient();
-      if (!sb?.auth?.getSession || !sb?.auth?.signInAnonymously) {
-        console.warn("Supabase auth not ready for anonymous login.");
-        return;
-      }
-      try {
-        const { data } = await sb.auth.getSession();
-        if (!data.session) {
-          await sb.auth.signInAnonymously();
-        }
-      } catch (error) {
-        console.warn("Anonymous login failed:", error);
-      }
-    });
-
     if (githubLoginButton) {
       githubLoginButton.addEventListener("click", async () => {
         const sb = await waitForSupabaseClient();
@@ -1714,8 +1677,6 @@
     }
 
     logoutButton.addEventListener("click", async () => {
-      currentUser = defaultUser;
-      localStorage.removeItem("godle_current_user");
       applyAuthState();
       usernameInput.focus();
       const sb = await waitForSupabaseClient();
@@ -1920,20 +1881,6 @@
       return total / data.length;
     }
 
-    async function hasLoggedInUser() {
-      const sb = await waitForSupabaseClient();
-      if (!sb?.auth?.getSession) {
-        return false;
-      }
-      try {
-        const { data } = await sb.auth.getSession();
-        return !!data.session?.user;
-      } catch (error) {
-        console.warn("Supabase session fetch failed:", error);
-        return false;
-      }
-    }
-
     async function storeDifficultyRating(rating) {
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
@@ -1946,20 +1893,7 @@
         return;
       }
 
-      let session = null;
-      try {
-        const { data, error } = await sb.auth.getSession();
-        if (error) {
-          console.warn("Supabase session fetch failed:", error);
-          return;
-        }
-        session = data?.session || null;
-      } catch (err) {
-        console.warn("Supabase session fetch failed:", err);
-        return;
-      }
-
-      const userId = session?.user?.id;
+      const userId = currentSession?.user?.id;
       if (!userId) {
         console.warn("Supabase session missing user id; rating not stored.");
         return;
@@ -2006,7 +1940,7 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      const hasAccount = await hasLoggedInUser();
+      const hasAccount = !!currentSession?.user;
       const canRate = hasAccount && isCorrect;
 
       // Start with default while we fetch
@@ -2147,7 +2081,7 @@
         await showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
         if (!isCorrect) {
-          const loggedIn = await hasLoggedInUser();
+          const loggedIn = !!currentSession?.user;
           if (loggedIn) {
             submitBtn.textContent = "Retry Puzzle";
             retryMessage.textContent = "Incorrect. Tap Retry Puzzle to try again.";
@@ -2191,7 +2125,7 @@
       if (!isCorrect) return;
 
       const rating = parseFloat(difficultySlider.value);
-      const hasAccount = await hasLoggedInUser();
+      const hasAccount = !!currentSession?.user;
       if (!hasAccount) {
         setMenuOpen(true);
         githubLoginButton.focus();
