@@ -1495,6 +1495,7 @@
     const defaultUser = "Guest";
     const storedUser = localStorage.getItem("godle_current_user");
     let currentUser = storedUser ? storedUser : defaultUser;
+    let currentSession = null;
 
     async function waitForSupabaseClient({ timeoutMs = 10000 } = {}) {
       const start = Date.now();
@@ -1631,6 +1632,7 @@
       renderStreak(s);
     }
     function applyAuthState(session = null) {
+      currentSession = session;
       const sessionUser = session?.user;
       if (sessionUser) {
         currentUser = sessionUser.id;
@@ -1654,28 +1656,19 @@
     }
     applyAuthState();
 
-    let supabaseAuthInitialized = false;
-    async function initSupabaseAuth() {
-      if (supabaseAuthInitialized) return;
+    (async () => {
       const sb = await waitForSupabaseClient();
-      if (!sb?.auth) {
-        return;
-      }
-      supabaseAuthInitialized = true;
+      if (!sb?.auth) return;
       try {
         const { data } = await sb.auth.getSession();
         await applyAuthState(data.session);
       } catch (error) {
         console.warn("Supabase session restore failed:", error);
       }
-
       sb.auth.onAuthStateChange(async (_event, session) => {
         await applyAuthState(session);
       });
-    }
-
-    initSupabaseAuth();
-    window.addEventListener("supabase-ready", initSupabaseAuth);
+    })();
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1711,11 +1704,10 @@
     if (githubLoginButton) {
       githubLoginButton.addEventListener("click", async () => {
         const sb = await waitForSupabaseClient();
-        const redirectTo = `${window.location.origin}${window.location.pathname}`;
         await sb.auth.signInWithOAuth({
           provider: "github",
           options: {
-            redirectTo
+            redirectTo: "https://cordell33.github.io/GodlePuzzle/"
           }
         });
       });
@@ -2027,14 +2019,14 @@
       difficultySlider.value = String(clamp(averageRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
 
-      difficultySlider.disabled = false; // always movable
+      difficultySlider.disabled = !canRate;
 
       if (canRate) {
         difficultySubmit.textContent = "Submit";
         difficultySubmit.disabled = false;
       } else if (!hasAccount) {
-        difficultySubmit.textContent = "Submit rating";
-        difficultySubmit.disabled = false; // let them click and open login
+        difficultySubmit.textContent = "Log in to submit";
+        difficultySubmit.disabled = false;
       } else {
         difficultySubmit.textContent = "Solve to submit";
         difficultySubmit.disabled = true;
@@ -2200,11 +2192,12 @@
 
       const rating = parseFloat(difficultySlider.value);
       const hasAccount = await hasLoggedInUser();
-      if (hasAccount) {
-        await storeDifficultyRating(rating);
-      } else {
-        storeLocalDifficultyRating(rating);
+      if (!hasAccount) {
+        setMenuOpen(true);
+        githubLoginButton.focus();
+        return;
       }
+      await storeDifficultyRating(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
       } catch (e) {
