@@ -200,6 +200,13 @@
       background: #ff9800;
       color: white;
     }
+    .retry-message {
+      margin: 0.4rem 0 0;
+      font-size: 0.95rem;
+      color: #ffcc80;
+      text-align: center;
+      display: none;
+    }
     #hint-button:hover {
       background: #f57c00;
       transform: translateY(-2px);
@@ -748,6 +755,7 @@
     <div class="guesses" id="guess-container"></div>
   </div>
   <button id="submit">Submit Guess</button>
+  <p id="retry-message" class="retry-message" aria-live="polite"></p>
   <button id="hint-button" style="display: none;">Hint</button>
   <div id="hint" class="hint-text"></div>
   <div id="stars"></div>
@@ -816,7 +824,15 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2Y29sb2lydGZudG5kdm52a3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MzI4NTMsImV4cCI6MjA4NTIwODg1M30.zygt7fYxhSkFJ_1tPe9Crhzj0kFj89gj9x6OCWtafG0";
 
     // Make it available to your existing non-module script
-    window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+        storageKey: "godle-auth"
+      }
+    });
   </script>
   <script>
     // ====== PUZZLE CONTENT ======
@@ -1473,6 +1489,7 @@
     const difficultyNumber = document.getElementById("difficulty-number");
     const difficultySubmit = document.getElementById("difficulty-submit");
     const difficultyBalls = Array.from(difficultyMeter.querySelectorAll(".ball"));
+    const retryMessage = document.getElementById("retry-message");
 
     let startTime;
     let timerInterval;
@@ -1483,15 +1500,17 @@
     let isCorrect = false;
     let gameActive = false;
     const defaultUser = "Guest";
-    const storedUser = localStorage.getItem("godle_current_user");
-    let currentUser = storedUser ? storedUser : defaultUser;
+    let currentUser = defaultUser;
+    let currentSession = null;
 
-    async function waitForSupabaseClient() {
-      for (let i = 0; i < 200; i++) {          // up to ~2 seconds
+    async function waitForSupabaseClient({ timeoutMs = 10000 } = {}) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
         if (window.sb) return window.sb;
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise(r => setTimeout(r, 25));
       }
-      throw new Error("Supabase client (window.sb) not ready");
+      console.warn("Supabase client (window.sb) not ready within timeout.");
+      return null;
     }
 
     submitBtn.textContent = "Start Game";
@@ -1619,20 +1638,16 @@
       renderStreak(s);
     }
     function applyAuthState(session = null) {
+      currentSession = session;
       const sessionUser = session?.user;
       if (sessionUser) {
         currentUser = sessionUser.id;
-        localStorage.setItem("godle_current_user", currentUser);
         userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
         loginButton.textContent = "Logged In";
-        logoutButton.style.display = "none";
-        usernameInput.value = "";
-      } else if (currentUser && currentUser !== defaultUser) {
-        userInfo.textContent = `👤 ${currentUser}`;
-        loginButton.textContent = "Switch User";
         logoutButton.style.display = "block";
-        usernameInput.value = currentUser;
+        usernameInput.value = "";
       } else {
+        currentUser = defaultUser;
         userInfo.textContent = defaultUser;
         loginButton.textContent = "Log In";
         logoutButton.style.display = "none";
@@ -1643,39 +1658,21 @@
     applyAuthState();
 
     (async () => {
-      const sb = await waitForSupabaseClient();
-
-      // 1) restore session on load
-      const { data } = await sb.auth.getSession();
-      await applyAuthState(data.session);
-
-      // 2) listen for changes
-      sb.auth.onAuthStateChange(async (_event, session) => {
+      if (!window.sb?.auth) return;
+      try {
+        const { data } = await window.sb.auth.getSession();
+        await applyAuthState(data.session);
+      } catch (error) {
+        console.warn("Supabase session restore failed:", error);
+      }
+      window.sb.auth.onAuthStateChange(async (_event, session) => {
         await applyAuthState(session);
       });
     })();
 
-    loginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = usernameInput.value.trim();
-      if (!name) {
-        alert("Enter a username to log in.");
-        usernameInput.focus();
-        return;
-      }
-      currentUser = name;
-      localStorage.setItem("godle_current_user", currentUser);
-      if (!localStorage.getItem(userStreakKey(currentUser))) {
-        writeLocalStreak({ current: 0, best: 0, last: "" });
-      }
-      applyAuthState();
-      submitBtn.focus();
-    });
-
     if (githubLoginButton) {
       githubLoginButton.addEventListener("click", async () => {
-        const sb = await waitForSupabaseClient();
-        await sb.auth.signInWithOAuth({
+        await window.sb.auth.signInWithOAuth({
           provider: "github",
           options: {
             redirectTo: "https://cordell33.github.io/GodlePuzzle/"
@@ -1684,11 +1681,16 @@
       });
     }
 
-    logoutButton.addEventListener("click", () => {
-      currentUser = defaultUser;
-      localStorage.removeItem("godle_current_user");
+    logoutButton.addEventListener("click", async () => {
       applyAuthState();
       usernameInput.focus();
+      if (window.sb?.auth?.signOut) {
+        try {
+          await window.sb.auth.signOut();
+        } catch (error) {
+          console.warn("Supabase sign out failed:", error);
+        }
+      }
     });
 
     // ===== INIT =====
@@ -1698,6 +1700,8 @@
       gameOverDiv.innerHTML = '';
       gameOverDiv.style.display = 'none';
       starsDiv.innerHTML = '';
+      retryMessage.textContent = '';
+      retryMessage.style.display = 'none';
       difficultyMeter.classList.add("hidden");
       shareResults.style.display = 'none';
       currentStep = 0;
@@ -1852,6 +1856,13 @@
       return `${getDifficultyStorageKey()}:ratings`;
     }
 
+    function storeLocalDifficultyRating(rating) {
+      const stored = localStorage.getItem(getDifficultyRatingsKey());
+      const ratings = stored ? (JSON.parse(stored) || []) : [];
+      ratings.push(rating);
+      localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+    }
+
     async function getDifficultyAverage(defaultRating) {
       const sb = window.sb;
       const keyDate = activePuzzleReleaseDate || getEasternDateString();
@@ -1882,27 +1893,11 @@
 
       // fallback: still store locally if supabase not loaded
       if (!sb) {
-        const stored = localStorage.getItem(getDifficultyRatingsKey());
-        const ratings = stored ? (JSON.parse(stored) || []) : [];
-        ratings.push(rating);
-        localStorage.setItem(getDifficultyRatingsKey(), JSON.stringify(ratings));
+        storeLocalDifficultyRating(rating);
         return;
       }
 
-      let session = null;
-      try {
-        const { data, error } = await sb.auth.getSession();
-        if (error) {
-          console.warn("Supabase session fetch failed:", error);
-          return;
-        }
-        session = data?.session || null;
-      } catch (err) {
-        console.warn("Supabase session fetch failed:", err);
-        return;
-      }
-
-      const userId = session?.user?.id;
+      const userId = currentSession?.user?.id;
       if (!userId) {
         console.warn("Supabase session missing user id; rating not stored.");
         return;
@@ -1949,13 +1944,7 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      let hasAccount = false;
-      try {
-        if (window.sb?.auth?.getSession) {
-          const { data } = await window.sb.auth.getSession();
-          hasAccount = !!data.session?.user;
-        }
-      } catch {}
+      const hasAccount = !!currentSession?.user;
       const canRate = hasAccount && isCorrect;
 
       // Start with default while we fetch
@@ -1968,14 +1957,14 @@
       difficultySlider.value = String(clamp(averageRating, 1, 5));
       renderDifficulty(parseFloat(difficultySlider.value));
 
-      difficultySlider.disabled = false; // always movable
+      difficultySlider.disabled = !canRate;
 
       if (canRate) {
         difficultySubmit.textContent = "Submit";
         difficultySubmit.disabled = false;
       } else if (!hasAccount) {
         difficultySubmit.textContent = "Log in to submit";
-        difficultySubmit.disabled = false; // let them click and open login
+        difficultySubmit.disabled = false;
       } else {
         difficultySubmit.textContent = "Solve to submit";
         difficultySubmit.disabled = true;
@@ -2080,6 +2069,8 @@
           : `❌ Incorrect. The code was ${code.join("")}`;
 
         submitBtn.disabled = true;
+        retryMessage.textContent = '';
+        retryMessage.style.display = 'none';
 
         if (isCorrect) {
           if (totalTime <= 60) stars++;
@@ -2093,7 +2084,18 @@
 
         await showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
-        submitBtn.textContent = "Start Game";
+        if (!isCorrect) {
+          const loggedIn = !!currentSession?.user;
+          if (loggedIn) {
+            submitBtn.textContent = "Retry Puzzle";
+            retryMessage.textContent = "Incorrect. Tap Retry Puzzle to try again.";
+            retryMessage.style.display = "block";
+          } else {
+            submitBtn.textContent = "Start Game";
+          }
+        } else {
+          submitBtn.textContent = "Start Game";
+        }
         submitBtn.disabled = false;
       }
     });
@@ -2124,18 +2126,15 @@
 
     difficultySubmit.addEventListener("click", async () => {
       const sb = await waitForSupabaseClient();
+      if (!isCorrect) return;
 
-      const { data } = await sb.auth.getSession();
-      const user = data.session?.user;
-
-      if (!user) {
+      const rating = parseFloat(difficultySlider.value);
+      const hasAccount = !!currentSession?.user;
+      if (!hasAccount) {
         setMenuOpen(true);
         githubLoginButton.focus();
         return;
       }
-      if (!isCorrect) return;
-
-      const rating = parseFloat(difficultySlider.value);
       await storeDifficultyRating(rating);
       try {
         await window.onSubmitDifficulty?.(rating);
