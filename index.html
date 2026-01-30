@@ -1597,12 +1597,17 @@
       writeLocalStreak(s);
       renderStreak(s);
     }
+    function getSessionUsername(sessionUser) {
+      if (!sessionUser) return "";
+      return sessionUser.email || sessionUser.user_metadata?.email || sessionUser.id || "";
+    }
     function applyAuthState(session = null) {
       currentSession = session;
       const sessionUser = session?.user;
       if (sessionUser) {
-        currentUser = sessionUser.id;
-        userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
+        const username = getSessionUsername(sessionUser);
+        currentUser = username || sessionUser.id;
+        userInfo.textContent = `👤 ${username || sessionUser.id}`;
         logoutButton.style.display = "block";
       } else {
         currentUser = defaultUser;
@@ -1889,9 +1894,9 @@
 
       if (error) {
         console.warn("Supabase user rating read failed:", error);
-        return null;
+        return getLocalDifficultySubmission();
       }
-      if (!data) return null;
+      if (!data) return getLocalDifficultySubmission();
       const rating = Number(data.rating);
       return Number.isFinite(rating) ? rating : null;
     }
