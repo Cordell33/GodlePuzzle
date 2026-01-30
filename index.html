@@ -825,6 +825,7 @@
 
     // Make it available to your existing non-module script
     window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.dispatchEvent(new Event("supabase-ready"));
   </script>
   <script>
     // ====== PUZZLE CONTENT ======
@@ -1495,12 +1496,14 @@
     const storedUser = localStorage.getItem("godle_current_user");
     let currentUser = storedUser ? storedUser : defaultUser;
 
-    async function waitForSupabaseClient() {
-      for (let i = 0; i < 200; i++) {          // up to ~2 seconds
+    async function waitForSupabaseClient({ timeoutMs = 10000 } = {}) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
         if (window.sb) return window.sb;
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise(r => setTimeout(r, 25));
       }
-      throw new Error("Supabase client (window.sb) not ready");
+      console.warn("Supabase client (window.sb) not ready within timeout.");
+      return null;
     }
 
     submitBtn.textContent = "Start Game";
@@ -1634,7 +1637,7 @@
         localStorage.setItem("godle_current_user", currentUser);
         userInfo.textContent = `👤 ${sessionUser.email || sessionUser.id}`;
         loginButton.textContent = "Logged In";
-        logoutButton.style.display = "none";
+        logoutButton.style.display = "block";
         usernameInput.value = "";
       } else if (currentUser && currentUser !== defaultUser) {
         userInfo.textContent = `👤 ${currentUser}`;
@@ -1651,20 +1654,30 @@
     }
     applyAuthState();
 
-    (async () => {
+    let supabaseAuthInitialized = false;
+    async function initSupabaseAuth() {
+      if (supabaseAuthInitialized) return;
       const sb = await waitForSupabaseClient();
+      if (!sb?.auth) {
+        return;
+      }
+      supabaseAuthInitialized = true;
+      try {
+        const { data } = await sb.auth.getSession();
+        await applyAuthState(data.session);
+      } catch (error) {
+        console.warn("Supabase session restore failed:", error);
+      }
 
-      // 1) restore session on load
-      const { data } = await sb.auth.getSession();
-      await applyAuthState(data.session);
-
-      // 2) listen for changes
       sb.auth.onAuthStateChange(async (_event, session) => {
         await applyAuthState(session);
       });
-    })();
+    }
 
-    loginForm.addEventListener("submit", (event) => {
+    initSupabaseAuth();
+    window.addEventListener("supabase-ready", initSupabaseAuth);
+
+    loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const name = usernameInput.value.trim();
       if (!name) {
@@ -1679,6 +1692,20 @@
       }
       applyAuthState();
       submitBtn.focus();
+
+      const sb = await waitForSupabaseClient();
+      if (!sb?.auth?.getSession || !sb?.auth?.signInAnonymously) {
+        console.warn("Supabase auth not ready for anonymous login.");
+        return;
+      }
+      try {
+        const { data } = await sb.auth.getSession();
+        if (!data.session) {
+          await sb.auth.signInAnonymously();
+        }
+      } catch (error) {
+        console.warn("Anonymous login failed:", error);
+      }
     });
 
     if (githubLoginButton) {
@@ -1693,11 +1720,19 @@
       });
     }
 
-    logoutButton.addEventListener("click", () => {
+    logoutButton.addEventListener("click", async () => {
       currentUser = defaultUser;
       localStorage.removeItem("godle_current_user");
       applyAuthState();
       usernameInput.focus();
+      const sb = await waitForSupabaseClient();
+      if (sb?.auth?.signOut) {
+        try {
+          await sb.auth.signOut();
+        } catch (error) {
+          console.warn("Supabase sign out failed:", error);
+        }
+      }
     });
 
     // ===== INIT =====
@@ -1886,10 +1921,7 @@
     }
 
     async function hasLoggedInUser() {
-      if (currentUser && currentUser !== defaultUser) {
-        return true;
-      }
-      const sb = window.sb;
+      const sb = await waitForSupabaseClient();
       if (!sb?.auth?.getSession) {
         return false;
       }
@@ -1977,13 +2009,7 @@
     }
 
     async function showDifficultyMeter({ defaultRating = 2.5 } = {}) {
-      let hasAccount = false;
-      try {
-        if (window.sb?.auth?.getSession) {
-          const { data } = await window.sb.auth.getSession();
-          hasAccount = !!data.session?.user;
-        }
-      } catch {}
+      const hasAccount = await hasLoggedInUser();
       const canRate = hasAccount && isCorrect;
 
       // Start with default while we fetch
@@ -2165,6 +2191,10 @@
 
     difficultySubmit.addEventListener("click", async () => {
       const sb = await waitForSupabaseClient();
+      if (!sb?.auth?.getSession) {
+        alert("Login is still loading. Please try again in a moment.");
+        return;
+      }
 
       const { data } = await sb.auth.getSession();
       const user = data.session?.user;
