@@ -716,6 +716,7 @@
         </div>
       </form>
       <button id="github-login-button" type="button">Continue with GitHub</button>
+      <button id="google-login" type="button">Sign in with Google</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak is saved per username on this device.</p>
       <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
@@ -1480,6 +1481,7 @@
     const userInfo = document.getElementById("user-info");
     const loginButton = document.getElementById("login-button");
     const githubLoginButton = document.getElementById("github-login-button");
+    const googleLoginButton = document.getElementById("google-login");
     const logoutButton = document.getElementById("logout-button");
     const themeToggle = document.getElementById("theme-toggle");
     const difficultyMeter = document.getElementById("difficulty-meter");
@@ -1674,6 +1676,14 @@
           options: {
             redirectTo: "https://cordell33.github.io/GodlePuzzle/"
           }
+        });
+      });
+    }
+    if (googleLoginButton) {
+      googleLoginButton.addEventListener("click", async () => {
+        await window.sb.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: "https://cordell33.github.io/GodlePuzzle/" }
         });
       });
     }
