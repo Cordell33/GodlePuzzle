@@ -1597,15 +1597,26 @@
 
     function computeStreakFromDates(dates, todayEastern) {
       if (!Array.isArray(dates) || dates.length === 0) {
-        return { current: 0, best: 0 };
+        return { current: 0, best: 0, completedToday: false };
       }
       const uniqueDates = Array.from(new Set(dates));
       const dateSet = new Set(uniqueDates);
+      const yesterdayEastern = shiftDateString(todayEastern, -1);
+      let anchor = null;
+      let completedToday = false;
+      if (dateSet.has(todayEastern)) {
+        anchor = todayEastern;
+        completedToday = true;
+      } else if (dateSet.has(yesterdayEastern)) {
+        anchor = yesterdayEastern;
+      }
       let current = 0;
-      let cursor = todayEastern;
-      while (dateSet.has(cursor)) {
-        current += 1;
-        cursor = shiftDateString(cursor, -1);
+      if (anchor) {
+        let cursor = anchor;
+        while (dateSet.has(cursor)) {
+          current += 1;
+          cursor = shiftDateString(cursor, -1);
+        }
       }
       const sorted = uniqueDates
         .map((dateString) => ({ dateString, time: parseDateString(dateString).getTime() }))
@@ -1622,7 +1633,7 @@
         }
         best = Math.max(best, run);
       }
-      return { current, best };
+      return { current, best, completedToday };
     }
 
     async function insertCompletionOnWin(starsEarned, timeSeconds) {
@@ -1656,7 +1667,10 @@
       const completions = await fetchUserCompletions();
       const streak = computeStreakFromDates(completions, todayEastern);
       const t = streak.current === 1 ? "day" : "days";
-      streakEl.textContent = `🔥 ${streak.current}-${t} streak (best ${streak.best})`;
+      const suffix = streak.completedToday
+        ? `(best ${streak.best})`
+        : "(solve today to keep it)";
+      streakEl.textContent = `🔥 ${streak.current}-${t} streak ${suffix}`;
     }
     function getSessionUsername(sessionUser) {
       if (!sessionUser) return "";
