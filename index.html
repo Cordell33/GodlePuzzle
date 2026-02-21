@@ -659,6 +659,22 @@
       .game-area { flex-direction: column; align-items: center; }
       .questions { min-width: 100%; }
       h1 { font-size: 2.2rem; }
+      #menu-toggle {
+        left: auto;
+        right: 1rem;
+      }
+      #side-menu {
+        left: auto;
+        right: 0;
+        transform: translateX(100%);
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.45);
+      }
+      body.light-mode #side-menu {
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+      }
+      body.menu-open #side-menu {
+        transform: translateX(0);
+      }
       #auth-bar {
         flex-direction: column;
         align-items: flex-start;
