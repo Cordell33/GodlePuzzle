@@ -2323,17 +2323,10 @@
 
         await showDifficultyMeter({ defaultRating: difficultyRating });
         gameActive = false;
-        if (!isCorrect) {
-          const loggedIn = !!currentSession?.user;
-          if (loggedIn) {
-            submitBtn.textContent = "Retry Puzzle";
-            retryMessage.textContent = "Incorrect. Tap Retry Puzzle to try again.";
-            retryMessage.style.display = "block";
-          } else {
-            submitBtn.textContent = "Start Game";
-          }
-        } else {
-          submitBtn.textContent = "Start Game";
+        submitBtn.textContent = "Replay";
+        if (!isCorrect && currentSession?.user) {
+          retryMessage.textContent = "Incorrect. Tap Replay to try again.";
+          retryMessage.style.display = "block";
         }
         submitBtn.disabled = false;
       }
