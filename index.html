@@ -420,11 +420,16 @@
       text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
     .share-buttons {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 0.75rem;
       margin-top: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
+      justify-items: center;
+      align-items: stretch;
+    }
+    .share-buttons .copy {
+      grid-column: 1 / -1;
+      width: min(320px, 100%);
     }
     .share-button {
       border: none;
@@ -450,6 +455,7 @@
       outline: 3px solid rgba(255, 255, 255, 0.6);
       outline-offset: 2px;
     }
+    .share-button.threads { background: #101010; }
     .share-button.twitter { background: #1DA1F2; }
     .share-button.facebook { background: #0866FF; }
     .share-button.reddit { background: #FF4500; }
@@ -680,6 +686,19 @@
         align-items: flex-start;
         gap: 0.2rem;
       }
+      .share-buttons {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+      }
+      .share-buttons .share-button {
+        width: 100%;
+      }
+      .share-buttons .threads { order: 1; }
+      .share-buttons .twitter { order: 2; }
+      .share-buttons .reddit { order: 3; }
+      .share-buttons .bluesky { order: 4; }
+      .share-buttons .copy { order: 5; }
+      .share-buttons .facebook { order: 6; }
     }
     
     @keyframes fadeIn {
@@ -797,6 +816,12 @@
   <div id="share-results">
     <h3>Share Your Results</h3>
     <div class="share-buttons">
+      <button class="share-button copy" type="button" onclick="copyResults()">
+        Copy Results
+      </button>
+      <button class="share-button threads" type="button" onclick="shareThreads()">
+        Share on Threads
+      </button>
       <button class="share-button twitter" type="button" onclick="shareTwitter()">
         Share on X (Twitter)
       </button>
@@ -808,9 +833,6 @@
       </button>
       <button class="share-button bluesky" type="button" onclick="shareBluesky()">
         Share on Bluesky
-      </button>
-      <button class="share-button copy" type="button" onclick="copyResults()">
-        Copy Results
       </button>
     </div>
     <div id="copy-message" aria-live="polite">Copied to clipboard!</div>
@@ -2367,6 +2389,12 @@
       difficultySlider.disabled = false;
       difficultySubmit.textContent = "Submit";
       difficultySubmit.disabled = false;
+    }
+
+    function shareThreads() {
+      const shareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(buildShareText())}`;
+      const win = window.open(shareUrl, '_blank', 'noopener');
+      if (!win) { copyResults(); alert('Threads share popup was blocked. Your results were copied—post them on Threads manually.'); }
     }
 
     function shareTwitter() {
