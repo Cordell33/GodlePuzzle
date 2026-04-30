@@ -223,7 +223,34 @@
       display: none; /* hidden until end */
       transition: background 0.3s ease, color 0.3s ease;
     }
+    .difficulty-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
     .difficulty.hidden { display: none; }
+    .book-link-wrap {
+      width: min(520px, 92vw);
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+    }
+    .book-link {
+      color: #ffe600;
+      background: linear-gradient(135deg, #ff1f7a, #ff6a00);
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      box-shadow: 0 0 18px rgba(255, 106, 0, 0.6);
+    }
+    .book-link:hover {
+      filter: brightness(1.08);
+      text-decoration: underline;
+    }
     .difficulty{
       width: min(520px, 92vw);
       margin-top: 18px;
@@ -663,6 +690,16 @@
     }
 
     @media (max-width: 600px) {
+      .book-link-wrap {
+        margin-top: 10px;
+        order: 2;
+      }
+      #difficulty-meter {
+        order: 1;
+      }
+      .difficulty-area {
+        display: flex;
+      }
       body { padding: 1rem; }
       .cell { width: 2.8rem; height: 2.8rem; font-size: 1.3rem; }
       .game-area { flex-direction: column; align-items: center; }
@@ -784,8 +821,12 @@
   <div id="hint" class="hint-text"></div>
   <div id="stars"></div>
   <div id="game-over" aria-live="polite"></div>
-  <!-- Difficulty Meter (hidden until game ends) -->
-  <section id="difficulty-meter" class="difficulty hidden" aria-label="Difficulty rating">
+  <div class="difficulty-area">
+    <div class="book-link-wrap">
+      <a class="book-link" href="https://www.amazon.com/dp/B0GZ218GCF?ref=ppx_yo2ov_dt_b_fed_asin_title" target="_blank" rel="noopener noreferrer">Get The Official Book NOW!</a>
+    </div>
+    <!-- Difficulty Meter (hidden until game ends) -->
+    <section id="difficulty-meter" class="difficulty hidden" aria-label="Difficulty rating">
     <div class="difficulty-row">
       <div class="balls" aria-hidden="true">
         <span class="ball" data-ball="1"></span>
@@ -814,7 +855,8 @@
     </div>
 
     <p class="difficulty-note">Rate how hard that puzzle felt (decimals welcome).</p>
-  </section>
+    </section>
+  </div>
 
   <div id="share-results">
     <h3>Share Your Results</h3>
