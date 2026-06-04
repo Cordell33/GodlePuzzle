@@ -408,17 +408,34 @@
     .login-panel button:hover {
       background: #0097a7;
     }
+    .more-games-heading {
+      margin: 1rem 0 0.25rem;
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
     .login-panel .external-link {
       margin-top: 0.75rem;
       display: block;
-      color: #00bcd4;
       font-weight: 600;
       text-decoration: none;
       transition: color 0.2s ease;
     }
     .login-panel .external-link:hover {
-      color: #ff9800;
       text-decoration: underline;
+    }
+    .login-panel .external-link.godlehex-link {
+      color: #ff3b30;
+    }
+    .login-panel .external-link.godlehex-link:hover {
+      color: #ff6b60;
+    }
+    .login-panel .external-link.cordlle-link {
+      color: #ffe600;
+    }
+    .login-panel .external-link.cordlle-link:hover {
+      color: #fff36b;
     }
     #logout-button {
       margin-top: 0.75rem;
@@ -779,8 +796,9 @@
       <button id="google-login" type="button">Sign in with Google</button>
       <button id="logout-button" type="button" style="display: none;">Log Out</button>
       <p class="login-hint">Your daily streak syncs to your account across devices.</p>
-      <a class="external-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
-      <a class="external-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
+      <p class="more-games-heading">Try More Games</p>
+      <a class="external-link godlehex-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
+      <a class="external-link cordlle-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
     </div>
     <div class="theme-toggle">
       <label class="toggle-control" for="theme-toggle">
