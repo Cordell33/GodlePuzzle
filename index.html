@@ -2,6 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google Analytics additions begin: Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18338723826"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-18338723826');
+  </script>
+  <!-- Google Analytics additions end: Google tag (gtag.js) -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gödle</title>
@@ -841,7 +850,7 @@
   <div id="game-over" aria-live="polite"></div>
   <div class="difficulty-area">
     <div class="book-link-wrap">
-      <a class="book-link" href="https://www.amazon.com/dp/B0GZ218GCF?ref=ppx_yo2ov_dt_b_fed_asin_title" target="_blank" rel="noopener noreferrer">Get The Official Book NOW!</a>
+      <a id="official-book-link" class="book-link" href="https://www.amazon.com/dp/B0GZ218GCF?ref=ppx_yo2ov_dt_b_fed_asin_title" target="_blank" rel="noopener noreferrer">Get The Official Book NOW!</a>
     </div>
     <!-- Difficulty Meter (hidden until game ends) -->
     <section id="difficulty-meter" class="difficulty hidden" aria-label="Difficulty rating">
@@ -1721,6 +1730,18 @@
     const difficultyBalls = Array.from(difficultyMeter.querySelectorAll(".ball"));
     const retryMessage = document.getElementById("retry-message");
 
+    // Google Analytics event tracking additions begin.
+    const officialBookLink = document.getElementById("official-book-link");
+
+    function trackGoogleAnalyticsEvent(eventName) {
+      gtag('event', eventName);
+    }
+
+    officialBookLink.addEventListener("click", () => {
+      trackGoogleAnalyticsEvent('book_click');
+    });
+    // Google Analytics event tracking additions end.
+
     let startTime;
     let timerInterval;
     let questionElements = [];
@@ -2445,6 +2466,8 @@
           if (totalTime <= 60) stars++;
           stars += correctCount;
           starsDiv.textContent = `⭐ Stars: ${stars}`;
+          // Google Analytics: record this successful puzzle completion once.
+          trackGoogleAnalyticsEvent('puzzle_completed');
           await insertCompletionOnWin(stars, totalTime);
           await syncStreakDisplay();
           showShareButtons();
@@ -2471,6 +2494,8 @@
     });
 
     function startGame() {
+      // Google Analytics: record this Start Game action once.
+      trackGoogleAnalyticsEvent('start_game');
       if (timerInterval) {
         clearInterval(timerInterval);
       }
