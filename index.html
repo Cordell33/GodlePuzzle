@@ -2158,7 +2158,7 @@
         .select("puzzle_date")
         .eq("user_id", user.id)
         .order("puzzle_date", { ascending: false })
-        .limit(60);
+        .limit(1000);
       if (error) {
         console.warn("Supabase completion read failed:", error);
         return [];
