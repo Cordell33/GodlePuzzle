@@ -2340,7 +2340,7 @@
         for (let c = 0; c < pyramid[r]; c++) {
           const cell = inputs[index++];
           if (cell && cell.classList.contains("green")) row += "🟩";
-          else if (cell && cell.classList.contains("yellow")) row += "🟨";
+          else if (cell && cell.classList.contains("yellow")) row += "🟡";
           else row += "⬛";
         }
         grid += (r > 0 ? "\n" : "") + row;
