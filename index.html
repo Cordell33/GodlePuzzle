@@ -1738,6 +1738,146 @@
       difficultyRating: 3.7,
       hintText: "0, 57, 381, 9264.",
       code: [3, 8, 6, 1, 4]
+    },
+    {
+      releaseDate: "2026-11-01",
+      questions: [
+        "Seasonal: On November 1, Halloween was how many day(s) ago?",
+        "Music: An octave contains 12 semitones. How many semitones are in 4 octaves?",
+        "Exponent/Addition: Compute 17² + 17.",
+        "Attendance: A 7,500-seat theater has 241 empty seats. How many seats are occupied?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [1],
+        [4, 8],
+        [3, 0, 6],
+        [7, 2, 5, 9],
+        [4, 8, 5, 2, 9]
+      ],
+      difficultyRating: 3.3,
+      hintText: "1, 48, 306, 7259.",
+      code: [4, 8, 5, 2, 9]
+    },
+    {
+      releaseDate: "2026-11-02",
+      questions: [
+        "Calendar: All Souls' Day is observed on November __.",
+        "Computer science: How many bits are in 8 bytes?",
+        "Roman numerals: Convert CMXVII to a decimal number.",
+        "Number systems: Convert hexadecimal EDD to decimal. D = 13.",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [2],
+        [6, 4],
+        [9, 1, 7],
+        [3, 8, 0, 5],
+        [9, 2, 0, 5, 8]
+      ],
+      difficultyRating: 3.7,
+      hintText: "2, 64, 917, 3805.",
+      code: [9, 2, 0, 5, 8]
+    },
+    {
+      releaseDate: "2026-11-03",
+      questions: [
+        "Coordinate geometry: How many axes are in a three-dimensional Cartesian coordinate system?",
+        "Geometry: What is each exterior angle of a regular pentagon?",
+        "Percent: Compute 20% of 2,950.",
+        "Attendance: A venue has 9,000 seats, and 854 are empty. How many are occupied?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [3],
+        [7, 2],
+        [5, 9, 0],
+        [8, 1, 4, 6],
+        [5, 9, 4, 6, 3]
+      ],
+      difficultyRating: 3.2,
+      hintText: "3, 72, 590, 8146.",
+      code: [5, 9, 4, 6, 3]
+    },
+    {
+      releaseDate: "2026-11-04",
+      questions: [
+        "Biology: RNA uses how many different nucleobases: A, U, C, and G?",
+        "Number theory: Find the least common multiple of 18 and 45.",
+        "Number systems: Convert hexadecimal 9E to decimal. E = 14.",
+        "Distance: A 7,500-meter hike has 237 meters remaining. How many meters have been completed?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [4],
+        [9, 0],
+        [1, 5, 8],
+        [7, 2, 6, 3],
+        [7, 5, 6, 8, 3]
+      ],
+      difficultyRating: 3.5,
+      hintText: "4, 90, 158, 7263.",
+      code: [7, 5, 6, 8, 3]
+    },
+    {
+      releaseDate: "2026-11-05",
+      questions: [
+        "Calendar trivia: Guy Fawkes Night is observed on November __.",
+        "Probability: How many ordered outcomes are possible when rolling two standard six-sided dice?",
+        "Geometry: Find the area of a triangle with base 45 and height 36.",
+        "Attendance: A 3,200-seat venue has 226 empty seats. How many seats are occupied?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [5],
+        [3, 6],
+        [8, 1, 0],
+        [2, 9, 7, 4],
+        [8, 1, 7, 4, 5]
+      ],
+      difficultyRating: 3.1,
+      hintText: "5, 36, 810, 2974.",
+      code: [8, 1, 7, 4, 5]
+    },
+    {
+      releaseDate: "2026-11-06",
+      questions: [
+        "Autumn: How many letters are in the word 'AUTUMN'?",
+        "Number theory: What prime number comes immediately after 23?",
+        "Discount: A $500 item is discounted by 6%. What is the sale price?",
+        "Food drive: A goal is 2,000 cans, with 147 still needed. How many cans have been collected?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [6],
+        [2, 9],
+        [4, 7, 0],
+        [1, 8, 5, 3],
+        [9, 7, 5, 3, 4]
+      ],
+      difficultyRating: 3.0,
+      hintText: "6, 29, 470, 1853.",
+      code: [9, 7, 5, 3, 4]
+    },
+    {
+      releaseDate: "2026-11-07",
+      questions: [
+        "Autumn vocabulary: How many letters are in the word 'HARVEST'?",
+        "Number theory: Find the least common multiple of 6 and 9.",
+        "Percent: Compute 25% of 2,120.",
+        "Inventory: A database contains 10,000 records, and 574 are archived. How many remain active?",
+        "Enter the final 5-digit code"
+      ],
+      correctAnswers: [
+        [7],
+        [1, 8],
+        [5, 3, 0],
+        [9, 4, 2, 6],
+        [5, 3, 2, 7, 6]
+      ],
+      difficultyRating: 3.2,
+      hintText: "7, 18, 530, 9426.",
+      code: [5, 3, 2, 7, 6]
     }
    ].sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 
@@ -1807,7 +1947,8 @@
 
    function getEasternMidnightUtcTimestamp(dateString) {
      const [year, month, day] = dateString.split("-").map(Number);
-     const referenceDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+     // At 00:00 UTC, Eastern still has the offset in effect at local midnight.
+     const referenceDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
      const offsetMinutes = getEasternOffsetMinutes(referenceDate);
      return Date.UTC(year, month - 1, day, 0, 0, 0) - offsetMinutes * 60 * 1000;
    }
