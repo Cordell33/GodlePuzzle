@@ -164,12 +164,12 @@
       border-color: #00bcd4;
       box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
     }
-    .cell.green { 
-      background: #2ecc71; 
+    .cell.green {
+      background: #2ecc71;
       border-color: #27ae60;
       transform: scale(1.05);
     }
-    .cell.yellow { 
+    .cell.yellow {
       background-color: #222;
       background-image: radial-gradient(circle closest-side at center, #f39c12 0 100%, transparent 100%);
       border-color: #444;
@@ -711,6 +711,59 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
+    .hint-color-settings {
+      border-top: 1px solid rgba(127, 127, 127, 0.3);
+      padding-top: 1rem;
+    }
+    .row:not(.final-code) .cell.green, .hint-preview-cell.green {
+      background: var(--hint-square, #2ecc71);
+      border-color: var(--hint-square-border, #27ae60);
+    }
+    .row:not(.final-code) .cell.yellow, .hint-preview-cell.yellow {
+      background-color: #222;
+      background-image: radial-gradient(circle closest-side at center, var(--hint-circle, #f39c12) 0 100%, transparent 100%);
+    }
+    body.light-mode .row:not(.final-code) .cell.green, body.light-mode .hint-preview-cell.green {
+      background: var(--hint-square-light, #66bb6a);
+      border-color: var(--hint-square-border-light, #43a047);
+      color: #0b2f16;
+    }
+    body.light-mode .row:not(.final-code) .cell.yellow, body.light-mode .hint-preview-cell.yellow {
+      background-color: #fff;
+      background-image: radial-gradient(circle closest-side at center, var(--hint-circle-light, #ffd54f) 0 100%, transparent 100%);
+      color: #111;
+    }
+    #side-menu .hint-color-settings h2 { font-size: 1.2rem; margin-bottom: 0.75rem; }
+    .hint-color-settings fieldset { border: 0; margin: 1rem 0; padding: 0; min-width: 0; }
+    .hint-color-settings legend { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .hint-color-options { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .hint-color-options button {
+      width: 2.5rem;
+      height: 2.75rem;
+      padding: 0;
+      font-size: 1.4rem;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .hint-color-options button[aria-pressed="true"] { border-color: #00bcd4; background: rgba(0, 188, 212, 0.15); }
+    .hint-color-options button:focus-visible, .hint-settings-button:focus-visible { outline: 3px solid #00bcd4; outline-offset: 2px; }
+    .hint-color-options button:disabled { cursor: wait; opacity: 0.6; }
+    .hint-preview { display: flex; gap: 1.5rem; margin: 1rem 0; }
+    .hint-preview label { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .hint-preview-cell { display: inline-grid; place-items: center; width: 2.8rem; height: 2.8rem; border: 2px solid #444; border-radius: 8px; color: white; font-size: 1.5rem; font-weight: bold; }
+    .hint-settings-button { padding: 0.6rem 0.8rem; border: 0; border-radius: 8px; background: #00bcd4; color: #111; font-weight: 600; cursor: pointer; }
+    #side-menu #hint-color-status { min-height: 2.8em; font-size: 0.9rem; margin-top: 0.75rem; }
+    #hint-unlock-dialog { max-width: 360px; width: calc(100% - 4rem); padding: 1.5rem; border: 1px solid #00bcd4; border-radius: 16px; background: #1b1b1b; color: #eee; }
+    #hint-unlock-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+    #hint-unlock-dialog h2 { color: #00bcd4; font-size: 1.4rem; }
+    #hint-unlock-dialog p { line-height: 1.5; }
+    .hint-unlock-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    body.light-mode #hint-unlock-dialog { background: #fdfdfd; color: #1b1b1b; }
+    #side-menu { box-sizing: border-box; }
+    #side-menu .login-panel { box-sizing: border-box; }
+
     #auth-bar {
       width: 100%;
       max-width: 680px;
@@ -814,6 +867,30 @@
       <a class="external-link godlehex-link" href="https://cordell33.github.io/GodleHex/" target="_blank" rel="noopener noreferrer">GodleHex (weekly)</a>
       <a class="external-link cordlle-link" href="https://cordell33.github.io/Cordlle/" target="_blank" rel="noopener noreferrer">Cordlle (monthly)</a>
     </div>
+    <section id="hint-color-settings" class="hint-color-settings" aria-labelledby="hint-color-heading">
+      <h2 id="hint-color-heading" tabindex="-1">Hint Color Settings</h2>
+      <div id="hint-colors-locked">
+        <p><b>🔒 Custom Hint Colors</b></p>
+        <p>Unlock after completing a 3-day streak while logged in.</p>
+      </div>
+      <div id="hint-colors-controls" hidden>
+        <fieldset>
+          <legend>Correct Digit — Wrong Position</legend>
+          <div id="hint-circle-options" class="hint-color-options" role="group" aria-label="Wrong-position circle color"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Correct Digit — Correct Position</legend>
+          <div id="hint-square-options" class="hint-color-options" role="group" aria-label="Correct-position square color"></div>
+        </fieldset>
+        <div class="hint-preview" aria-label="Live hint preview">
+          <label><span id="hint-circle-preview" class="hint-preview-cell yellow" aria-label="Wrong position">4</span>Wrong position</label>
+          <label><span id="hint-square-preview" class="hint-preview-cell green" aria-label="Correct position">7</span>Correct position</label>
+        </div>
+        <button id="hint-colors-reset" class="hint-settings-button" type="button">Reset to Default</button>
+      </div>
+      <p id="hint-color-status" role="status" aria-live="polite"></p>
+      <button id="hint-colors-retry" class="hint-settings-button" type="button" hidden>Retry Loading Colors</button>
+    </section>
     <div class="theme-toggle">
       <label class="toggle-control" for="theme-toggle">
         <span>Light background</span>
@@ -822,6 +899,19 @@
       </label>
     </div>
   </aside>
+
+  <dialog id="hint-unlock-dialog" aria-labelledby="hint-unlock-heading" aria-describedby="hint-unlock-description">
+    <h2 id="hint-unlock-heading">🎉 New Feature Unlocked!</h2>
+    <div id="hint-unlock-description">
+      <p>You've completed a 3-day Gödle streak!</p>
+      <p>You can now customize your hint colors.</p>
+      <p>Choose from 7 different colors for your circles and squares to make Gödle your own!</p>
+    </div>
+    <div class="hint-unlock-actions">
+      <button id="hint-unlock-customize" class="hint-settings-button" type="button">Customize My Colors</button>
+      <button id="hint-unlock-dismiss" class="hint-settings-button" type="button">Maybe Later</button>
+    </div>
+  </dialog>
 
   <div id="auth-bar">
     <div id="user-info">Guest</div>
@@ -836,7 +926,7 @@
     <ul>
       <li>Answer 4 questions using every digit (0-9) <b>exactly once</b>.</li>
       <li>Use your solutions as clues for the final 5-digit code.</li>
-      <li><b>Green</b> = correct digit & position, <b>Yellow</b> = correct digit, wrong position.</li>
+      <li><b><span id="hint-square-legend">🟩 Green square</span></b> = correct digit & position, <b><span id="hint-circle-legend">🟡 Yellow circle</span></b> = correct digit, wrong position.</li>
       <li>Beat the clock to earn bonus stars and share your results.</li>
       <li>Click <b>Start Game</b> below to begin, then <b>Submit Guess</b> for each row.</li>
     </ul>
@@ -1642,6 +1732,163 @@
 
     setMenuOpen(false);
 
+    // One palette supplies both the board's CSS colors and every share emoji.
+    const HINT_COLORS = {
+      red:    { name: "Red",    circle: "🔴", square: "🟥", dark: "#e74c3c", light: "#ef9a9a", border: "#c0392b", lightBorder: "#e57373" },
+      orange: { name: "Orange", circle: "🟠", square: "🟧", dark: "#e67e22", light: "#ffcc80", border: "#d35400", lightBorder: "#ffb74d" },
+      yellow: { name: "Yellow", circle: "🟡", square: "🟨", dark: "#f39c12", light: "#ffd54f", border: "#c8890c", lightBorder: "#fbc02d" },
+      green:  { name: "Green",  circle: "🟢", square: "🟩", dark: "#2ecc71", light: "#66bb6a", border: "#27ae60", lightBorder: "#43a047" },
+      blue:   { name: "Blue",   circle: "🔵", square: "🟦", dark: "#2980b9", light: "#90caf9", border: "#2471a3", lightBorder: "#64b5f6" },
+      purple: { name: "Purple", circle: "🟣", square: "🟪", dark: "#8e44ad", light: "#ce93d8", border: "#7d3c98", lightBorder: "#ba68c8" },
+      brown:  { name: "Brown",  circle: "🟤", square: "🟫", dark: "#8d6e63", light: "#bcaaa4", border: "#795548", lightBorder: "#a1887f" }
+    };
+    const DEFAULT_HINT_COLORS = { circle: "yellow", square: "green" };
+    let hintColors = { ...DEFAULT_HINT_COLORS };
+    let hintColorsUnlocked = false;
+    let hintColorUserId = null;
+    let hintColorRequest = 0;
+    let hintColorSaving = false;
+    const hintColorControls = document.getElementById("hint-colors-controls");
+    const hintColorLocked = document.getElementById("hint-colors-locked");
+    const hintColorStatus = document.getElementById("hint-color-status");
+    const hintColorRetry = document.getElementById("hint-colors-retry");
+    const hintColorReset = document.getElementById("hint-colors-reset");
+    const hintUnlockDialog = document.getElementById("hint-unlock-dialog");
+
+    function getHintColor(type) {
+      const key = hintColorsUnlocked && currentSession?.user?.id === hintColorUserId
+        ? hintColors[type] : DEFAULT_HINT_COLORS[type];
+      return HINT_COLORS[key] || HINT_COLORS[DEFAULT_HINT_COLORS[type]];
+    }
+
+    function renderHintColors() {
+      const circle = getHintColor("circle");
+      const square = getHintColor("square");
+      const style = document.documentElement.style;
+      style.setProperty("--hint-circle", circle.dark);
+      style.setProperty("--hint-circle-light", circle.light);
+      style.setProperty("--hint-square", square.dark);
+      style.setProperty("--hint-square-light", square.light);
+      style.setProperty("--hint-square-border", square.border);
+      style.setProperty("--hint-square-border-light", square.lightBorder);
+      document.getElementById("hint-circle-legend").textContent = `${circle.circle} ${circle.name} circle`;
+      document.getElementById("hint-square-legend").textContent = `${square.square} ${square.name} square`;
+      document.getElementById("hint-circle-preview").setAttribute("aria-label", `${circle.name} circle: correct digit, wrong position`);
+      document.getElementById("hint-square-preview").setAttribute("aria-label", `${square.name} square: correct digit, correct position`);
+      hintColorLocked.hidden = hintColorsUnlocked;
+      hintColorControls.hidden = !hintColorsUnlocked;
+      hintColorControls.querySelectorAll("button[data-color]").forEach(button => {
+        button.setAttribute("aria-pressed", String(hintColors[button.dataset.type] === button.dataset.color));
+        button.disabled = hintColorSaving;
+      });
+      hintColorReset.disabled = hintColorSaving;
+    }
+
+    function resetAccountHintColors(userId = null) {
+      hintColorUserId = userId;
+      hintColorRequest += 1; // Discard in-flight reads/saves for the previous account.
+      hintColorsUnlocked = false;
+      hintColorSaving = false;
+      hintColors = { ...DEFAULT_HINT_COLORS };
+      hintColorStatus.textContent = userId ? "Loading account colors…" : "";
+      hintColorRetry.hidden = true;
+      if (hintUnlockDialog.open) hintUnlockDialog.close();
+      renderHintColors();
+    }
+
+    async function refreshHintColors() {
+      const userId = hintColorUserId;
+      if (!userId || currentSession?.user?.id !== userId || hintColorSaving) return;
+      const request = ++hintColorRequest;
+      const isCurrent = () => request === hintColorRequest && currentSession?.user?.id === userId;
+      hintColorRetry.hidden = true;
+      try {
+        const sb = await waitForSupabaseClient();
+        if (!sb) throw new Error("Account service unavailable");
+        const { data, error } = await sb.from("hint_color_preferences")
+          .select("circle_color,square_color,unlocked_at,notification_seen_at")
+          .eq("user_id", userId).maybeSingle();
+        if (!isCurrent()) return;
+        if (error) throw error;
+        hintColorsUnlocked = !!data?.unlocked_at;
+        hintColors = {
+          circle: Object.hasOwn(HINT_COLORS, data?.circle_color) ? data.circle_color : DEFAULT_HINT_COLORS.circle,
+          square: Object.hasOwn(HINT_COLORS, data?.square_color) ? data.square_color : DEFAULT_HINT_COLORS.square
+        };
+        hintColorStatus.textContent = "";
+        renderHintColors();
+        if (hintColorsUnlocked && !data.notification_seen_at) {
+          // The server atomically claims this message across tabs and devices.
+          const { data: claimed, error: claimError } = await sb.rpc("claim_hint_color_unlock_notification");
+          if (!isCurrent()) return;
+          if (claimError) throw claimError;
+          if (claimed && !hintUnlockDialog.open) hintUnlockDialog.showModal();
+        }
+      } catch (error) {
+        if (!isCurrent()) return;
+        console.warn("Hint color settings read failed:", error);
+        hintColorStatus.textContent = "Could not load all account color settings. Please retry.";
+        hintColorRetry.hidden = false;
+      }
+    }
+
+    async function saveHintColors(nextColors) {
+      const userId = hintColorUserId;
+      if (!hintColorsUnlocked || !userId || currentSession?.user?.id !== userId || hintColorSaving) return;
+      const previousColors = { ...hintColors };
+      const request = ++hintColorRequest;
+      const isCurrent = () => request === hintColorRequest && currentSession?.user?.id === userId;
+      hintColors = { ...nextColors };
+      hintColorSaving = true;
+      hintColorStatus.textContent = "Saving colors…";
+      renderHintColors();
+      try {
+        const sb = await waitForSupabaseClient();
+        if (!sb) throw new Error("Account service unavailable");
+        const { data, error } = await sb.from("hint_color_preferences")
+          .update({ circle_color: nextColors.circle, square_color: nextColors.square })
+          .eq("user_id", userId).select("circle_color,square_color").single();
+        if (!isCurrent()) return;
+        if (error || !data) throw error || new Error("Settings were not saved");
+        hintColors = { circle: data.circle_color, square: data.square_color };
+        hintColorStatus.textContent = "Colors saved to your account.";
+      } catch (error) {
+        if (!isCurrent()) return;
+        hintColors = previousColors;
+        hintColorStatus.textContent = "Could not save colors. Your previous colors have been restored. Please try again.";
+        console.warn("Hint color settings save failed:", error);
+      } finally {
+        if (isCurrent()) {
+          hintColorSaving = false;
+          renderHintColors();
+        }
+      }
+    }
+
+    for (const type of ["circle", "square"]) {
+      const options = document.getElementById(`hint-${type}-options`);
+      for (const [key, color] of Object.entries(HINT_COLORS)) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = color[type];
+        button.dataset.type = type;
+        button.dataset.color = key;
+        button.title = `${color.name} ${type}`;
+        button.setAttribute("aria-label", `${color.name} ${type}`);
+        button.addEventListener("click", () => saveHintColors({ ...hintColors, [type]: key }));
+        options.appendChild(button);
+      }
+    }
+    hintColorReset.addEventListener("click", () => saveHintColors(DEFAULT_HINT_COLORS));
+    hintColorRetry.addEventListener("click", refreshHintColors);
+    document.getElementById("hint-unlock-dismiss").addEventListener("click", () => hintUnlockDialog.close());
+    document.getElementById("hint-unlock-customize").addEventListener("click", () => {
+      hintUnlockDialog.close();
+      setMenuOpen(true);
+      document.getElementById("hint-color-heading").focus();
+      document.getElementById("hint-color-settings").scrollIntoView({ block: "nearest" });
+    });
+
     // ===== DAILY STREAK (Supabase completions) =====
     async function getAuthedUser() {
       const sb = await waitForSupabaseClient();
@@ -1763,7 +2010,9 @@
         return;
       }
       const todayEastern = getEasternDateString();
+      const userId = currentSession.user.id;
       const completions = await fetchUserCompletions();
+      if (currentSession?.user?.id !== userId) return;
       const streak = computeStreakFromDates(completions, todayEastern);
       const t = streak.current === 1 ? "day" : "days";
       const suffix = streak.completedToday
@@ -1778,6 +2027,8 @@
     function applyAuthState(session = null) {
       currentSession = session;
       const sessionUser = session?.user;
+      const colorsAccountChanged = (sessionUser?.id || null) !== hintColorUserId;
+      if (colorsAccountChanged || !sessionUser) resetAccountHintColors(sessionUser?.id || null);
       if (sessionUser) {
         const username = getSessionUsername(sessionUser);
         currentUser = username || sessionUser.id;
@@ -1793,6 +2044,7 @@
         if (googleLoginButton) googleLoginButton.style.display = "inline-flex";
       }
       syncStreakDisplay();
+      if (colorsAccountChanged) refreshHintColors();
     }
     applyAuthState();
 
@@ -1805,8 +2057,9 @@
       } catch (error) {
         console.warn("Supabase session restore failed:", error);
       }
-      sb.auth.onAuthStateChange(async (_event, session) => {
-        await applyAuthState(session);
+      sb.auth.onAuthStateChange((_event, session) => {
+        // Run Supabase reads after the auth callback releases its session lock.
+        setTimeout(() => applyAuthState(session), 0);
       });
     })();
 
@@ -2197,14 +2450,14 @@
       const minutes = Math.floor(totalTime / 60);
       const seconds = totalTime % 60;
       let grid = "";
-      const inputs = document.querySelectorAll(".cell");
+      const inputs = guessContainer.querySelectorAll(".row:not(.final-code) .cell");
       let index = 0;
       for (let r = 0; r < pyramid.length - 1; r++) {
         let row = "";
         for (let c = 0; c < pyramid[r]; c++) {
           const cell = inputs[index++];
-          if (cell && cell.classList.contains("green")) row += "🟩";
-          else if (cell && cell.classList.contains("yellow")) row += "🟡";
+          if (cell && cell.classList.contains("green")) row += getHintColor("square").square;
+          else if (cell && cell.classList.contains("yellow")) row += getHintColor("circle").circle;
           else row += "⬛";
         }
         grid += (r > 0 ? "\n" : "") + row;
@@ -2276,6 +2529,7 @@
           trackGoogleAnalyticsEvent('puzzle_completed');
           await insertCompletionOnWin(stars, totalTime);
           await syncStreakDisplay();
+          await refreshHintColors();
           showShareButtons();
         } else {
           stars = 0;
